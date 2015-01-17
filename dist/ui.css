@@ -1,8 +1,103 @@
+* {
+  position: relative;
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   padding: 0;
   border: 0;
+  background: #333;
+}
+.rack {
+  display: flex;
+  flex-flow: row nowrap;
+}
+.overview {
+  width: 90px;
 }
 .pads {
-  list-style: none;
+  display: flex;
+  flex-flow: row wrap-reverse;
+  width: 384px;
+  margin: 0 6px 6px 0;
+  padding: 0;
+  font-size: 0;
+}
+.pad {
+  display: flex;
+  flex-flow: column nowrap;
+  margin: 6px 0 0 6px;
+  padding: 0;
+  border: none;
+}
+.pad-controls {
+  font: 10px sans;
+  color: #ddd;
+  text-align: center;
+  line-height: 18px;
+  display: flex;
+  flex-flow: row nowrap;
+  height: 18px;
+}
+.pad-play,
+.pad-edit,
+.pad-mute,
+.pad-solo {
+  background: #555;
+  cursor: pointer;
+  border-top: 1px solid #666;
+  border-left: 1px solid #666;
+  border-right: 1px solid #444;
+  border-bottom: 1px solid #444;
+}
+.pad-play:hover,
+.pad-edit:hover,
+.pad-mute:hover,
+.pad-solo:hover {
+  background: #666;
+}
+.pad-play {
+  width: 90px;
+  height: 42px;
+  border-radius: 3px 3px 0 0;
+}
+.pad-edit {
+  flex-grow: 2;
+  border-radius: 0 0 0 3px;
+}
+.pad-mute {
+  flex-grow: 1;
+}
+.pad-solo {
+  flex-grow: 1;
+  border-radius: 0 0 3px 0;
+}
+.editor {
+  flex-grow: 1;
+  margin: 0 6px 6px 0;
+  display: flex;
+  flex-flow: column nowrap;
+}
+.editor-waveform {
+  flex-grow: 1;
+  background: #ffd;
+  margin-top: 6px;
+}
+.editor-controls {
+  display: flex;
+  flex-flow: row nowrap;
+}
+.editor-section {
+  font: 10px sans;
+  color: #ddd;
+  margin-right: 24px;
+}
+.editor-section-title {
+  margin-top: 6px;
+  font-weight: bold;
+}
+.editor-field,
+.editor-section-title {
+  line-height: 18px;
+  height: 18px;
 }

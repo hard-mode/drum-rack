@@ -20,6 +20,16 @@ gulp.task('stylus', function () {
 });
 
 
+gulp.task('server', function () {
+  gulp.src('dist')
+      .pipe(require('gulp-server-livereload')({
+        livereload:  true,
+        defaultFile: 'ui.html',
+        log:         'debug'
+      }))
+})
+
+
 gulp.task('default', function () {
 
   gulp.start('stylus');
@@ -27,5 +37,7 @@ gulp.task('default', function () {
 
   gulp.start('jade');
   gulp.watch('src/ui.jade', ['jade']);
+
+  gulp.start('server');
 
 });
