@@ -1,0 +1,13 @@
+doctype html
+
+- var PAD_COUNT = 16
+
+html
+  head
+    link(rel='stylesheet',href='ui.css')
+  body
+    ul.pads
+      - var pad = 0
+      while pad < PAD_COUNT
+        - pad++
+        li.pad

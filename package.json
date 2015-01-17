@@ -1,0 +1,19 @@
+{
+  "name": "hardmode-drumrack",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+  },
+  "dependencies": {
+    "gulp": "^3.8.10",
+    "gulp-jade": "^0.10.0",
+    "gulp-stylus": "^2.0.0",
+    "jade": "^1.9.0"
+  }
+}
