@@ -1,4 +1,5 @@
 var
+  fs       = require('fs'),
   gulp     = require('gulp'),
   gulpfile = require('./gulpfile.js'),
   Hapi     = require('hapi');
@@ -17,8 +18,19 @@ server.route({
 
 server.route({
   method:  'GET',
-  path:    '/{path*}',
+  path:    '/static/{path*}',
   handler: { directory: { path: 'dist/' } }
+});
+
+server.route({
+  method:  'GET',
+  path:    '/sample',
+  handler: function(request, reply) {
+    console.log(request.query.q);
+    fs.readdir('/mnt/data/Samplez/Drum Machine Samples/Alesis Hr16', function (err, files) {
+      reply(files.filter(function (f) { return -1 !== f.toLowerCase().indexOf(request.query.q) }));
+    })
+  }
 });
 
 server.start(function () {

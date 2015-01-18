@@ -1,4 +1,4 @@
-body-bg     = #333
+body-bg     = #404040
 body-font   = 10px sans
 pad-size    = 90px
 pad-spacing = 6px
@@ -7,7 +7,7 @@ pad-bg      = #555
 pad-bg-hi   = #666
 pad-text    = #ddd
 border-hi   = #666
-border-lo   = #444
+border-lo   = #333
 
 *
   position   relative
@@ -17,7 +17,8 @@ body
   margin  0
   padding 0
   border  0
-  background body-bg
+  background-color body-bg
+  //background-image url('bg.png')
 
 .rack
   display   flex
@@ -46,26 +47,42 @@ body
   border     none
 
   background    pad-bg
-  border-top    1px solid border-hi
-  border-bottom 1px solid border-lo
+  //border-top    1px solid border-hi
+  //border-bottom 1px solid border-lo
   border-radius 3px
 
+  cursor pointer
+
+.pad-load,
 .pad-controls
   font        body-font
   color       pad-text
   text-align  center
   line-height 18px
 
-  display   flex
-  flex-flow row nowrap
-  height    18px
+.pad-controls
+  display    flex
+  flex-flow  row nowrap
+  height     18px
+
+.pad-load
+  display    none
+  opacity    0
+  transition opacity 0.1s
+  .pad:hover &
+    opacity 0.5
+
+.pad.empty .pad-load
+  display block
+
+.pad.empty .pad-controls
+  display none
 
 .pad-play,
 .pad-edit,
 .pad-mute,
 .pad-solo
   transition    background 0.1s
-  cursor        pointer
 
 .pad-edit,
 .pad-mute,
@@ -147,3 +164,27 @@ body
 .editor-field, .editor-section-title
   line-height 18px
   height 18px
+
+.modal
+  position      absolute
+  background    #888
+  height        300px
+  border-radius 3px
+  box-shadow    0 1px 3px rgba(0,0,0,0.5)
+  padding       6px
+  opacity       0
+  transition    opacity 0.5s;
+
+.modal:after
+  bottom   100%
+  left     50%
+  border   solid transparent
+  content  ' '
+  height   0
+  width    0
+  position absolute
+  pointer-events none
+  border-color rgba(0,0,0,0);
+  border-bottom-color #888
+  border-width 12px
+  margin-left -12px

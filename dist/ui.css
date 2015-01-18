@@ -6,7 +6,7 @@ body {
   margin: 0;
   padding: 0;
   border: 0;
-  background: #333;
+  background-color: #404040;
 }
 .rack {
   display: flex;
@@ -30,25 +30,40 @@ body {
   padding: 0;
   border: none;
   background: #555;
-  border-top: 1px solid #666;
-  border-bottom: 1px solid #444;
   border-radius: 3px;
+  cursor: pointer;
 }
+.pad-load,
 .pad-controls {
   font: 10px sans;
   color: #ddd;
   text-align: center;
   line-height: 18px;
+}
+.pad-controls {
   display: flex;
   flex-flow: row nowrap;
   height: 18px;
+}
+.pad-load {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.pad:hover .pad-load {
+  opacity: 0.5;
+}
+.pad.empty .pad-load {
+  display: block;
+}
+.pad.empty .pad-controls {
+  display: none;
 }
 .pad-play,
 .pad-edit,
 .pad-mute,
 .pad-solo {
   transition: background 0.1s;
-  cursor: pointer;
 }
 .pad-edit,
 .pad-mute,
@@ -69,7 +84,7 @@ body {
 }
 .pad-edit,
 .pad-mute {
-  border-right: 1px solid #444;
+  border-right: 1px solid #333;
 }
 .pad-mute,
 .pad-solo {
@@ -132,4 +147,28 @@ body {
 .editor-section-title {
   line-height: 18px;
   height: 18px;
+}
+.modal {
+  position: absolute;
+  background: #888;
+  height: 300px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  padding: 6px;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.modal:after {
+  bottom: 100%;
+  left: 50%;
+  border: solid transparent;
+  content: ' ';
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: rgba(0,0,0,0);
+  border-bottom-color: #888;
+  border-width: 12px;
+  margin-left: -12px;
 }

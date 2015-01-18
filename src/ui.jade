@@ -4,7 +4,7 @@ doctype html
 
 html
   head
-    link(rel='stylesheet',href='ui.css')
+    link(rel='stylesheet',href='static/ui.css')
   body
     .rack
       //-.overview
@@ -16,6 +16,7 @@ html
             .pad-play
               .pad-play-icon ▶
               .pad-load-icon ☺
+            .pad-load Load sample
             .pad-controls
               .pad-edit Edit
               .pad-mute M
@@ -44,3 +45,5 @@ html
             .editor-field Volume
             .editor-field Mute
             .editor-field Solo
+    script(src='static/reqwest.js')
+    script(src='static/index.js')
