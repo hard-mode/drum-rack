@@ -29,6 +29,10 @@ body {
   margin: 6px 0 0 6px;
   padding: 0;
   border: none;
+  background: #555;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #444;
+  border-radius: 3px;
 }
 .pad-controls {
   font: 10px sans;
@@ -43,23 +47,51 @@ body {
 .pad-edit,
 .pad-mute,
 .pad-solo {
-  background: #555;
+  transition: background 0.1s;
   cursor: pointer;
-  border-top: 1px solid #666;
-  border-left: 1px solid #666;
-  border-right: 1px solid #444;
-  border-bottom: 1px solid #444;
 }
-.pad-play:hover,
+.pad-edit,
+.pad-mute,
+.pad-solo {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.pad:hover .pad-edit,
+.pad:hover .pad-mute,
+.pad:hover .pad-solo {
+  opacity: 0.5;
+}
 .pad-edit:hover,
 .pad-mute:hover,
 .pad-solo:hover {
+  opacity: 1 dd;
   background: #666;
+}
+.pad-edit,
+.pad-mute {
+  border-right: 1px solid #444;
+}
+.pad-mute,
+.pad-solo {
+  border-left: 1px solid #666;
 }
 .pad-play {
   width: 90px;
   height: 42px;
   border-radius: 3px 3px 0 0;
+  justify-content: center;
+}
+.pad-play-icon {
+  height: 42px;
+  line-height: 42px;
+  font-size: 18px;
+  color: #fff;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.pad:not(.empty):hover .pad-play-icon {
+  opacity: 0.5;
 }
 .pad-edit {
   flex-grow: 2;

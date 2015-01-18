@@ -1,7 +1,8 @@
 var
   gulp       = require('gulp'),
   gulpJade   = require('gulp-jade'),
-  gulpStylus = require('gulp-stylus');
+  gulpStylus = require('gulp-stylus'),
+  liveReload = require('gulp-livereload');
 
 
 gulp.task('jade', function () {
@@ -9,35 +10,27 @@ gulp.task('jade', function () {
     .pipe(gulpJade(
       { jade:   require('jade'),
         pretty: true }))
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest('dist/'))
+    .pipe(liveReload());
 });
 
 
 gulp.task('stylus', function () {
   return gulp.src('src/ui.styl')
     .pipe(gulpStylus())
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest('dist/'))
+    .pipe(liveReload());
 });
 
 
-gulp.task('server', function () {
-  gulp.src('dist')
-      .pipe(require('gulp-server-livereload')({
-        livereload:  true,
-        defaultFile: 'ui.html',
-        log:         'debug'
-      }))
-})
-
-
 gulp.task('default', function () {
+
+  liveReload.listen();
 
   gulp.start('stylus');
   gulp.watch('src/ui.styl', ['stylus']);
 
   gulp.start('jade');
   gulp.watch('src/ui.jade', ['jade']);
-
-  gulp.start('server');
 
 });
