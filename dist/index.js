@@ -1,61 +1,53 @@
-var modal = null;
+function template(locals) {
+var buf = [];
+var jade_mixins = {};
+var jade_interp;
+;var locals_for_with = (locals || {});(function (css, js, undefined) {
+buf.push("<!DOCTYPE html><html><head>");
+// iterate css
+;(function(){
+  var $$obj = css;
+  if ('number' == typeof $$obj.length) {
 
-var onKeyTyped = function () {
-  var p = this.parentElement;
-  console.log(this);
-  reqwest({
-    url: '/sample',
-    method: 'get',
-    data: { q: this.value },
-    success: function (resp) {
-      var s = '';
-      for (var i in resp) {
-        s += '<div>' + resp[i] + '</div>';
-      }
-      p.innerHTML = s;
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var stylesheet = $$obj[$index];
+
+buf.push("<link rel=\"stylesheet\"" + (jade.attr("href", stylesheet, true, true)) + ">");
     }
-  });
-}
 
-var browseSamples = function (pad) {
-  if (modal) {
-    modal.remove();
-  }
-
-  modal = document.createElement('div');
-  modal.classList.add('modal');
-  modal.style.left  = Math.max((pad.offsetLeft  -  60), 3) + 'px';
-  modal.style.width = (pad.offsetWidth + 120) + 'px';
-  modal.style.top   = (pad.offsetTop + pad.offsetHeight + 6) + 'px';
-  modal.style.opacity = 1;
-  console.log(modal);
-
-  var input = document.createElement('input');
-  input.style.width = '100%';
-  input.placeholder = 'search...';
-  input.addEventListener('input', onKeyTyped.bind(input));
-  modal.appendChild(input);
-
-  document.body.appendChild(modal);
-}
-
-var trigger = function (pad) {
-}
-
-var onPadClick = function () {
-  if (this.classList.contains('empty')) {
-    browseSamples(pad);
   } else {
-    trigger(pad);
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var stylesheet = $$obj[$index];
+
+buf.push("<link rel=\"stylesheet\"" + (jade.attr("href", stylesheet, true, true)) + ">");
+    }
+
   }
+}).call(this);
+
+buf.push("</head><body>");
+// iterate js
+;(function(){
+  var $$obj = js;
+  if ('number' == typeof $$obj.length) {
+
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var script = $$obj[$index];
+
+buf.push("<script" + (jade.attr("src", js, true, true)) + "></script><script>document.body.innerHTML = template()</script>");
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var script = $$obj[$index];
+
+buf.push("<script" + (jade.attr("src", js, true, true)) + "></script><script>document.body.innerHTML = template()</script>");
+    }
+
+  }
+}).call(this);
+
+buf.push("</body></html>");}.call(this,"css" in locals_for_with?locals_for_with.css:typeof css!=="undefined"?css:undefined,"js" in locals_for_with?locals_for_with.js:typeof js!=="undefined"?js:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 }
-
-var pads = document.getElementsByClassName('pad');
-
-for (var i = 0; i < pads.length; i++) {
-  var pad = pads[i];
-  pad.getElementsByClassName('pad-play')[0].addEventListener(
-    'click',
-    function () { browseSamples(this) }.bind(pad));
-  console.log(pad.classList.contains('empty'));
-};

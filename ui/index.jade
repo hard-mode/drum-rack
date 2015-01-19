@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    each stylesheet in css
+      link(rel='stylesheet',href=stylesheet)
+  body
+    each script in js
+      script(src=js)
+      script document.body.innerHTML = template()
