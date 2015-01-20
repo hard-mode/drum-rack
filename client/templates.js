@@ -65,19 +65,6 @@
         var buf = [];
         var jade_mixins = {};
         var jade_interp;
-        var locals_for_with = locals || {};
-        (function(Math) {}).call(this, "Math" in locals_for_with ? locals_for_with.Math : typeof Math !== "undefined" ? Math : undefined);
-        return buf.join("");
-    };
-
-    // picker.jade:picker compiled template
-    templatizer["picker"]["picker"] = function tmpl_picker_picker(t, l, w, h) {
-        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
-        var left = Math.max(3, l - 60) + "px";
-        var width = w + 120 + "px";
-        var top = t + h + 6 + "px";
-        var style = "left:" + left + ";top:" + top + ";width:" + width;
-        buf.push("<div" + jade.attr("style", style + ";opacity:1", true, false) + ' class="modal"><input style="width:100%" placeholder="search..."/><div class="search-results"></div></div>');
         return buf.join("");
     };
 
@@ -86,7 +73,10 @@
         var buf = [];
         var jade_mixins = {};
         var jade_interp;
-        buf.push("<!DOCTYPE html>");
+        var locals_for_with = locals || {};
+        (function(Math) {
+            buf.push("<!DOCTYPE html>");
+        }).call(this, "Math" in locals_for_with ? locals_for_with.Math : typeof Math !== "undefined" ? Math : undefined);
         return buf.join("");
     };
 
@@ -117,6 +107,18 @@
         }
         buf.push("</div>");
         buf.push(templatizer["rack"]["SampleEditor"]());
+        return buf.join("");
+    };
+
+
+    // rack.jade:SamplePicker compiled template
+    templatizer["rack"]["SamplePicker"] = function tmpl_rack_SamplePicker(t, l, w, h) {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        var left = Math.max(3, l - 60) + "px";
+        var width = w + 120 + "px";
+        var top = t + h + 6 + "px";
+        var style = "left:" + left + ";top:" + top + ";width:" + width;
+        buf.push("<div" + jade.attr("style", style + ";opacity:1", true, true) + ' class="modal"><input style="width:100%" placeholder="search..."><div class="search-results"></div></div>');
         return buf.join("");
     };
 

@@ -27,15 +27,23 @@ H.DrumRack = function () {
     });
   }
 
+  var HTMLToDOMNode = function (html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    return div;
+  }
+
   var browseSamples = function (pad) {
     if (modal) {
       modal.remove();
     }
 
-    document.body.appendChild(H.TEMPLATES['picker'](
-      pad.offsetTop,   pad.offsetLeft,
-      pad.offsetWidth, pad.offsetHeight)
-    );
+    modal = HTMLToDOMNode(
+      H.TEMPLATES.rack.SamplePicker(
+        pad.offsetTop,   pad.offsetLeft,
+        pad.offsetWidth, pad.offsetHeight)).firstChild;
+
+    document.body.appendChild(modal);
   }
 
   var trigger = function (pad) {
