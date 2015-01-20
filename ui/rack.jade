@@ -1,8 +1,6 @@
 doctype html
 
-- var PAD_COUNT = 16
-
-mixin sample-pad
+mixin SamplePad
   .pad.empty
     .pad-play
       .pad-play-icon ▶
@@ -13,7 +11,7 @@ mixin sample-pad
       .pad-mute M
       .pad-solo S
 
-mixin sample-editor
+mixin SampleEditor
   .editor
     .editor-waveform
     .editor-controls
@@ -39,12 +37,12 @@ mixin sample-editor
         .editor-field Mute
         .editor-field Solo
 
-mixin sample-rack
+mixin SampleRack(padCount)
   //-.overview
   .pads
     - var pad = 0
-    while pad < PAD_COUNT
+    while pad < padCount
       - pad++
-      +sample-pad
-  +sample-editor
+      +SamplePad
+  +SampleEditor
 

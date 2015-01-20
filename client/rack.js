@@ -2,7 +2,7 @@
 
 H.DrumRack = function () {
 
-  document.body.innerHTML += H.TEMPLATES['rack'](); 
+  document.body.innerHTML += H.TEMPLATES.rack.SampleRack(16); 
 
   var modal = null;
 
@@ -60,4 +60,4 @@ H.DrumRack = function () {
 
 }
 
-})(HARDMODE);
+})(window.HARDMODE);

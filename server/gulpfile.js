@@ -10,7 +10,7 @@ gulp.task('templates', function () {
   console.log('Rebuilding templates.');
   templatizer(
     __dirname + '/../ui',
-    __dirname + '/../dist/templates.js',
+    __dirname + '/../client/templates.js',
     { namespace:        'HARDMODE',
       dontRemoveMixins: true });
 });
@@ -19,7 +19,7 @@ gulp.task('templates', function () {
 gulp.task('stylesheets', function () {
   return gulp.src('ui/*.styl')
     .pipe(gulpStylus())
-    .pipe(gulp.dest('dist/'))
+    .pipe(gulp.dest('client/'))
     .pipe(liveReload());
 });
 

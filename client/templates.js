@@ -38,24 +38,24 @@
                     }
                 }
             }).call(this);
-            buf.push("</head><body>");
+            buf.push('<script>window.HARDMODE = {};</script><script src="app/templates.js"></script><script>window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer\ndelete window.HARDMODE.templatizer</script>');
             (function() {
                 var $obj = js;
                 if ("number" == typeof $obj.length) {
                     for (var $index = 0, $l = $obj.length; $index < $l; $index++) {
                         var script = $obj[$index];
-                        buf.push("<script" + jade.attr("src", js, true, true) + "></script><script>document.body.innerHTML = template()</script>");
+                        buf.push("<script" + jade.attr("src", script, true, true) + "></script>");
                     }
                 } else {
                     var $l = 0;
                     for (var $index in $obj) {
                         $l++;
                         var script = $obj[$index];
-                        buf.push("<script" + jade.attr("src", js, true, true) + "></script><script>document.body.innerHTML = template()</script>");
+                        buf.push("<script" + jade.attr("src", script, true, true) + "></script>");
                     }
                 }
             }).call(this);
-            buf.push("</body></html>");
+            buf.push("</head><body></body></html>");
         }).call(this, "css" in locals_for_with ? locals_for_with.css : typeof css !== "undefined" ? css : undefined, "js" in locals_for_with ? locals_for_with.js : typeof js !== "undefined" ? js : undefined, "undefined" in locals_for_with ? locals_for_with.undefined : typeof undefined !== "undefined" ? undefined : undefined);
         return buf.join("");
     };
@@ -87,37 +87,36 @@
         var jade_mixins = {};
         var jade_interp;
         buf.push("<!DOCTYPE html>");
-        var PAD_COUNT = 16;
         return buf.join("");
     };
 
-    // rack.jade:sample-pad compiled template
-    templatizer["rack"]["sample-pad"] = function tmpl_rack_sample_pad() {
+    // rack.jade:SamplePad compiled template
+    templatizer["rack"]["SamplePad"] = function tmpl_rack_SamplePad() {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
         buf.push('<div class="pad empty"><div class="pad-play"><div class="pad-play-icon">▶</div><div class="pad-load-icon">☺</div></div><div class="pad-load">Load sample</div><div class="pad-controls"><div class="pad-edit">Edit</div><div class="pad-mute">M</div><div class="pad-solo">S</div></div></div>');
         return buf.join("");
     };
 
 
-    // rack.jade:sample-editor compiled template
-    templatizer["rack"]["sample-editor"] = function tmpl_rack_sample_editor() {
+    // rack.jade:SampleEditor compiled template
+    templatizer["rack"]["SampleEditor"] = function tmpl_rack_SampleEditor() {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
         buf.push('<div class="editor"><div class="editor-waveform"></div><div class="editor-controls"><div class="editor-section"><div class="editor-section-title">Info</div><div class="editor-field">Path</div><div class="editor-field">Format</div><div class="editor-section-title">Playback</div><div class="editor-field">Start</div><div class="editor-field">End</div><div class="editor-field">Loop</div></div><div class="editor-section"><div class="editor-section-title">Pitch</div><div class="editor-field">Semi</div><div class="editor-field">Cent</div><div class="editor-section-title">Filter</div><div class="editor-field">HP</div><div class="editor-field">LP</div></div><div class="editor-section"><div class="editor-section-title">Output</div><div class="editor-field">Pan</div><div class="editor-field">Volume</div><div class="editor-field">Mute</div><div class="editor-field">Solo</div></div></div></div>');
         return buf.join("");
     };
 
 
-    // rack.jade:sample-rack compiled template
-    templatizer["rack"]["sample-rack"] = function tmpl_rack_sample_rack() {
+    // rack.jade:SampleRack compiled template
+    templatizer["rack"]["SampleRack"] = function tmpl_rack_SampleRack(padCount) {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
         buf.push('<div class="pads">');
         var pad = 0;
-        while (pad < PAD_COUNT) {
+        while (pad < padCount) {
             pad++;
-            buf.push(templatizer["rack"]["sample-pad"]());
+            buf.push(templatizer["rack"]["SamplePad"]());
         }
         buf.push("</div>");
-        buf.push(templatizer["rack"]["sample-editor"]());
+        buf.push(templatizer["rack"]["SampleEditor"]());
         return buf.join("");
     };
 

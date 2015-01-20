@@ -1,7 +1,7 @@
 var
-  doc      = require('./document.js'),
-  fs       = require('fs'),
-  Hapi     = require('hapi');
+  fs        = require('fs'),
+  Hapi      = require('hapi'),
+  templates = require('../client/templates.js');
 
 var
   server = module.exports = new Hapi.Server();
@@ -12,19 +12,17 @@ server.route({
   method:  'GET',
   path:    '/',
   handler: function(request, reply) {
-    reply(doc.build());
+    reply(templates.app({
+      css: [ 'app/rack.css' ],
+      js:  [ 'static/reqwest.js',
+             'app/rack.js',
+             'app/init.js', ]}));
   }
 });
 
 server.route({
-  method:  'GET',
-  path:    '/app/{path*}',
-  handler: { directory: { path: 'dist/' } }
-});
-
-server.route({
   method: 'GET',
-  path:   '/client/{path*}',
+  path:   '/app/{path*}',
   handler: { directory: { path: 'client/' } }
 });
 

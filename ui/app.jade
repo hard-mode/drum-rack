@@ -3,7 +3,11 @@ html
   head
     each stylesheet in css
       link(rel='stylesheet',href=stylesheet)
-  body
+    script window.HARDMODE = {};
+    script(src='app/templates.js')
+    script
+      | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer
+      | delete window.HARDMODE.templatizer
     each script in js
-      script(src=js)
-      script document.body.innerHTML = template()
+      script(src=script)
+  body
