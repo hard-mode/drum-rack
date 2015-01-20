@@ -74,9 +74,7 @@
         var jade_mixins = {};
         var jade_interp;
         var locals_for_with = locals || {};
-        (function(Math) {
-            buf.push("<!DOCTYPE html>");
-        }).call(this, "Math" in locals_for_with ? locals_for_with.Math : typeof Math !== "undefined" ? Math : undefined);
+        (function(Math) {}).call(this, "Math" in locals_for_with ? locals_for_with.Math : typeof Math !== "undefined" ? Math : undefined);
         return buf.join("");
     };
 
@@ -99,7 +97,7 @@
     // rack.jade:SampleRack compiled template
     templatizer["rack"]["SampleRack"] = function tmpl_rack_SampleRack(padCount) {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
-        buf.push('<div class="pads">');
+        buf.push('<div class="rack"><div class="pads">');
         var pad = 0;
         while (pad < padCount) {
             pad++;
@@ -107,6 +105,7 @@
         }
         buf.push("</div>");
         buf.push(templatizer["rack"]["SampleEditor"]());
+        buf.push("</div>");
         return buf.join("");
     };
 
@@ -118,7 +117,7 @@
         var width = w + 120 + "px";
         var top = t + h + 6 + "px";
         var style = "left:" + left + ";top:" + top + ";width:" + width;
-        buf.push("<div" + jade.attr("style", style + ";opacity:1", true, true) + ' class="modal"><input style="width:100%" placeholder="search..."><div class="search-results"></div></div>');
+        buf.push("<div" + jade.attr("style", style + ";opacity:1", true, false) + ' class="modal"><input style="width:100%" placeholder="search..."/><div class="search-results"></div></div>');
         return buf.join("");
     };
 

@@ -1,0 +1,21 @@
+{
+  "name": "hardmode-drum-rack",
+  "main": "index.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/hard-mode/drum-rack",
+  "authors": [
+    "Adam Avramov <fallenblood@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "reflux": "~0.2.3",
+    "reqwest": "~1.1.5"
+  }
+}

@@ -1,5 +1,3 @@
-doctype html
-
 mixin SamplePad
   .pad.empty
     .pad-play
@@ -39,12 +37,13 @@ mixin SampleEditor
 
 mixin SampleRack(padCount)
   //-.overview
-  .pads
-    - var pad = 0
-    while pad < padCount
-      - pad++
-      +SamplePad
-  +SampleEditor
+  .rack
+    .pads
+      - var pad = 0
+      while pad < padCount
+        - pad++
+        +SamplePad
+    +SampleEditor
 
 mixin SamplePicker(t, l, w, h)
   - var left  = Math.max(3, l - 60) + 'px'
