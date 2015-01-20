@@ -25,6 +25,12 @@ server.route({
 });
 
 server.route({
+  method: 'GET',
+  path:   '/client/{path*}',
+  handler: { directory: { path: 'client/' } }
+});
+
+server.route({
   method:  'GET',
   path:    '/static/{path*}',
   handler: { directory: { path: 'static/' } }

@@ -21,7 +21,7 @@ doc = module.exports = {
   wrapJS2:
     function (js) {
       return doc.wrapJS('app/' + js + '.js') +
-        '<script>window.TEMPLATES["' + js + '"] = template;</script>';
+        '<script>window.HARDMODE.TEMPLATES["' + js + '"] = template;</script>';
     },
 
 
@@ -31,17 +31,16 @@ doc = module.exports = {
 
 
   buildScripts: function () {
-    return '<script>window.TEMPLATES = {};</script>' + 
+    return '<script>window.HARDMODE = { TEMPLATES: {} };</script>' + 
       [ 'static/jade-runtime.js'
       , 'static/reqwest.js'
+      , 'client/init.js'
+      , 'client/rack.js'
       ].map(doc.wrapJS).join('') +
 
-      [ 'ui',
+      [ 'rack',
         'picker',
-      ].map(doc.wrapJS2).join('') +
-
-      '<script>window.onload = function () {' +
-      'document.body.innerHTML = window.TEMPLATES["ui"]() }</script>';
+      ].map(doc.wrapJS2).join('');
   },
 
 
