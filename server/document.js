@@ -26,7 +26,7 @@ doc = module.exports = {
 
 
   buildStyles: function () {
-    return [ 'app/ui.css' ].map(doc.wrapCSS).join('');
+    return [ 'app/rack.css' ].map(doc.wrapCSS).join('');
   },
 
 
