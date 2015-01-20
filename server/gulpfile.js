@@ -1,23 +1,22 @@
 var
-  gulp       = require('gulp'),
-  gulpJade   = require('gulp-jade'),
-  gulpStylus = require('gulp-stylus'),
-  liveReload = require('gulp-livereload');
+  gulp        = require('gulp'),
+  gulpJade    = require('gulp-jade'),
+  gulpStylus  = require('gulp-stylus'),
+  liveReload  = require('gulp-livereload'),
+  templatizer = require('templatizer');
 
 
-gulp.task('jade', function () {
-  return gulp.src('ui/*.jade')
-    .pipe(gulpJade(
-      { jade:   require('jade'),
-        client: true,
-        self:   true,
-        pretty: false }))
-    .pipe(gulp.dest('dist/'))
-    .pipe(liveReload());
+gulp.task('templates', function () {
+  console.log('Rebuilding templates.');
+  templatizer(
+    __dirname + '/../ui',
+    __dirname + '/../dist/templates.js',
+    { namespace:        'HARDMODE',
+      dontRemoveMixins: true });
 });
 
 
-gulp.task('stylus', function () {
+gulp.task('stylesheets', function () {
   return gulp.src('ui/*.styl')
     .pipe(gulpStylus())
     .pipe(gulp.dest('dist/'))
@@ -29,10 +28,10 @@ gulp.task('default', function () {
 
   liveReload.listen();
 
-  gulp.start('stylus');
-  gulp.watch('ui/*.styl', ['stylus']);
+  gulp.start('stylesheets');
+  gulp.watch('ui/*.styl', ['stylesheets']);
 
-  gulp.start('jade');
-  gulp.watch('ui/*.jade', ['jade']);
+  gulp.start('templates');
+  gulp.watch('ui/*.jade', ['templates']);
 
 });

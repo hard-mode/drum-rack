@@ -16,6 +16,7 @@
     "gulp-server-livereload": "^1.0.1",
     "gulp-stylus": "^2.0.0",
     "hapi": "^8.1.0",
-    "jade": "^1.9.0"
+    "jade": "^1.9.0",
+    "templatizer": "^1.1.1"
   }
 }

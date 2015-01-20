@@ -36,7 +36,11 @@ doc = module.exports = {
       , 'static/reqwest.js'
       , 'client/init.js'
       , 'client/rack.js'
+      , 'app/templates.js'
       ].map(doc.wrapJS).join('') +
+
+      '<script>window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer;' +
+              'delete window.HARDMODE.templatizer;</script>' +
 
       [ 'rack',
         'picker',

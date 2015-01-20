@@ -34,28 +34,8 @@ H.DrumRack = function () {
 
     document.body.appendChild(H.TEMPLATES['picker'](
       pad.offsetTop,   pad.offsetLeft,
-      pad.offsetWidth, pad.offsetHeight));
-
-    //modal = document.createElement('div');
-    //modal.classList.add('modal');
-    //modal.style.left  = Math.max((pad.offsetLeft  -  60), 3) + 'px';
-    //modal.style.width = (pad.offsetWidth + 120) + 'px';
-    //modal.style.top   = (pad.offsetTop + pad.offsetHeight + 6) + 'px';
-    //modal.style.opacity = 1;
-    //console.log(modal);
-
-    //var input = document.createElement('input');
-    //input.style.width = '100%';
-    //input.placeholder = 'search...';
-    //input.addEventListener('input', onKeyTyped.bind(input));
-    //modal.appendChild(input);
-
-    //var div = document.createElement('div');
-    //div.id = 'search-results';
-    //div.style.overflow = 'auto';
-    //modal.appendChild(div);
-
-    //document.body.appendChild(modal);
+      pad.offsetWidth, pad.offsetHeight)
+    );
   }
 
   var trigger = function (pad) {
@@ -63,20 +43,19 @@ H.DrumRack = function () {
 
   var onPadClick = function () {
     if (this.classList.contains('empty')) {
-      browseSamples(pad);
+      browseSamples(this);
     } else {
-      trigger(pad);
+      trigger(this);
     }
   }
 
   var pads = document.getElementsByClassName('pad');
 
   for (var i = 0; i < pads.length; i++) {
+
     var pad = pads[i];
-    pad.getElementsByClassName('pad-play')[0].addEventListener(
-      'click',
-      function () { browseSamples(this) }.bind(pad));
-    console.log(pad.classList.contains('empty'));
+
+    pad.addEventListener('click', onPadClick.bind(pad));
   };
 
 }
