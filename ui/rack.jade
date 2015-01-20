@@ -1,5 +1,5 @@
-mixin SamplePad
-  .pad.empty
+mixin SamplePad(number)
+  .pad.empty(data-number=number)
     .pad-play
       .pad-play-icon ▶
       .pad-load-icon ☺
@@ -42,7 +42,7 @@ mixin SampleRack(padCount)
       - var pad = 0
       while pad < padCount
         - pad++
-        +SamplePad
+        +SamplePad(pad)
     +SampleEditor
 
 mixin SamplePicker(t, l, w, h)

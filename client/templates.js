@@ -60,14 +60,6 @@
         return buf.join("");
     };
 
-    // picker.jade compiled template
-    templatizer["picker"] = function tmpl_picker(locals) {
-        var buf = [];
-        var jade_mixins = {};
-        var jade_interp;
-        return buf.join("");
-    };
-
     // rack.jade compiled template
     templatizer["rack"] = function tmpl_rack(locals) {
         var buf = [];
@@ -79,9 +71,9 @@
     };
 
     // rack.jade:SamplePad compiled template
-    templatizer["rack"]["SamplePad"] = function tmpl_rack_SamplePad() {
+    templatizer["rack"]["SamplePad"] = function tmpl_rack_SamplePad(number) {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
-        buf.push('<div class="pad empty"><div class="pad-play"><div class="pad-play-icon">▶</div><div class="pad-load-icon">☺</div></div><div class="pad-load">Load sample</div><div class="pad-controls"><div class="pad-edit">Edit</div><div class="pad-mute">M</div><div class="pad-solo">S</div></div></div>');
+        buf.push("<div" + jade.attr("data-number", number, true, false) + ' class="pad empty"><div class="pad-play"><div class="pad-play-icon">▶</div><div class="pad-load-icon">☺</div></div><div class="pad-load">Load sample</div><div class="pad-controls"><div class="pad-edit">Edit</div><div class="pad-mute">M</div><div class="pad-solo">S</div></div></div>');
         return buf.join("");
     };
 
@@ -101,7 +93,7 @@
         var pad = 0;
         while (pad < padCount) {
             pad++;
-            buf.push(templatizer["rack"]["SamplePad"]());
+            buf.push(templatizer["rack"]["SamplePad"](pad));
         }
         buf.push("</div>");
         buf.push(templatizer["rack"]["SampleEditor"]());
