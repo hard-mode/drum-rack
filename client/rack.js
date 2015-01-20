@@ -10,10 +10,14 @@ H.DrumRack = function () {
 
   document.body.innerHTML += H.TEMPLATES.rack.SampleRack(16); 
 
+  var pads = document.getElementsByClassName('pad');
+
   var actions = {
 
     pad: Reflux.createActions([
       'click',
+      'load',
+      'clear',
       'play',
       'edit',
       'mute',
@@ -27,7 +31,7 @@ H.DrumRack = function () {
       'searchResults',
       'searchFailed',
       'select',
-      'cancel'
+      'close'
     ])
 
   };
@@ -35,23 +39,39 @@ H.DrumRack = function () {
   var pad = Reflux.createStore({
 
     init: function () {
-      this.pads  = {};
+      this.slots  = {};
       this.listenToMany(actions.pad);
     },
 
     click: function (pad, event) {
       var n = pad.dataset.number;
-      if (this.pads[n]) {
+      if (this.slots[n]) {
+        console.log(event.target);
+        actions.pad.play(n);
       } else {
         actions.modal.open(pad);
       }
     },
+
+    load: function (pad, path) {
+      this.slots[pad] = path;
+      for (var i = 0; i < pads.length; i++) {
+        if (pads[i].dataset.number === pad) {
+          pads[i].classList.remove('empty');
+        }
+      }
+    },
+
+    play: function (pad) {
+      console.log('badumtss');
+    }
 
   });
 
   var modal = Reflux.createStore({
 
     init: function () {
+      this.pad     = null;
       this.element = null;
       this.input   = null;
       this.timer   = null;
@@ -60,14 +80,18 @@ H.DrumRack = function () {
     },
 
     open: function (pad) {
+      this.pad = pad.dataset.number;
+
       if (this.element) this.element.remove();
       this.element = document.body.appendChild(
         HTMLToDOMNode(
           H.TEMPLATES.rack.SamplePicker(
             pad.offsetTop,   pad.offsetLeft,
             pad.offsetWidth, pad.offsetHeight)).firstChild);
+
       this.input = this.element.getElementsByTagName('input')[0];
       this.input.addEventListener('input', actions.modal.type);
+      this.input.focus();
     },
 
     type: function () {
@@ -100,12 +124,17 @@ H.DrumRack = function () {
     },
 
     select: function (elem, evt) {
-      console.log(elem);
+      actions.pad.load(this.pad, elem.innerText);
+      actions.modal.close();
+    },
+
+    close: function () {
+      this.element.remove();
+      this.element = null;
     }
 
   });
 
-  var pads = document.getElementsByClassName('pad');
   for (var i = 0; i < pads.length; i++) {
     var pad = pads[i];
     pad.addEventListener('click', function (event) {
