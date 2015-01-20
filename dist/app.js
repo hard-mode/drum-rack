@@ -2,7 +2,7 @@ function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-;var locals_for_with = (locals || {});(function (css, js, undefined) {
+var self = locals || {};
 buf.push("<!DOCTYPE html><html><head>");
 // iterate css
 ;(function(){
@@ -49,5 +49,5 @@ buf.push("<script" + (jade.attr("src", js, true, true)) + "></script><script>doc
   }
 }).call(this);
 
-buf.push("</body></html>");}.call(this,"css" in locals_for_with?locals_for_with.css:typeof css!=="undefined"?css:undefined,"js" in locals_for_with?locals_for_with.js:typeof js!=="undefined"?js:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
+buf.push("</body></html>");;return buf.join("");
 }

@@ -10,6 +10,7 @@ gulp.task('jade', function () {
     .pipe(gulpJade(
       { jade:   require('jade'),
         client: true,
+        self:   true,
         pretty: false }))
     .pipe(gulp.dest('dist/'))
     .pipe(liveReload());

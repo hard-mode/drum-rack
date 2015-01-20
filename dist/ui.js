@@ -2,7 +2,7 @@ function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-
+var self = locals || {};
 buf.push("<!DOCTYPE html>");
 var PAD_COUNT = 16
 buf.push("<div class=\"rack\"><div class=\"pads\">");

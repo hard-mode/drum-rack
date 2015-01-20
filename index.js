@@ -1,29 +1,20 @@
 var
   fs       = require('fs'),
   gulp     = require('gulp'),
+  Hapi     = require('hapi'),
   gulpfile = require('./gulpfile.js'),
-  Hapi     = require('hapi');
+  doc      = require('./server/document.js'),
   server   = new Hapi.Server();
 
 gulp.start('default');
 
 server.connection({ port: 4000 });
 
-var
-  TEMPLATE = '<!doctype html><html><head>[head]</body><body></body></html>',
-  wrapJS   = function(css){return '<link rel="stylesheet" href="' + css + '">'},
-  STYLES   = [ 'app/ui.css' 
-             ].map(wrapJS).join(''),
-  wrapCSS  = function(js){return '<script src="' + js + '"></script>'},
-  SCRIPTS  = [ 'static/jade-runtime.js'
-             , 'reqwest.js'
-             ].map(wrapCSS).join('');
-
 server.route({
   method:  'GET',
   path:    '/',
   handler: function(request, reply) {
-    reply(TEMPLATE.replace('[head]', STYLES).replace('[body]', SCRIPTS));
+    reply(doc.build());
   }
 });
 
