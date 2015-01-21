@@ -1,7 +1,11 @@
 var
   fs        = require('fs'),
   Hapi      = require('hapi'),
+  Socket    = require('socket.io'),
+  osc       = require('node-osc'),
   templates = require('../client/templates.js');
+
+var oscServer, oscClient;
 
 module.exports = function (settings) {
 
@@ -59,6 +63,32 @@ module.exports = function (settings) {
         }
       })
     }
+  });
+
+  var io = Socket(server.listener);
+  //io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
+  console.log(io.origins());
+  io.origins('*:*');
+
+  io.sockets.on('connection', function (socket) {
+
+    socket.on('config', function (obj) {
+      oscServer = new osc.Server(obj.server.port, obj.server.host);
+      oscClient = new osc.Client(obj.server.host, obj.server.port);
+
+      oscClient.send('/status', socket.sessionId + ' connected');
+
+      oscServer.on('message', function (msg, rinfo) {
+        console.log(msg, rinfo);
+        socket.emit('message', msg);
+      });
+
+      socket.on('message', function (obj) {
+        oscClient.send(obj);
+      });
+
+    })
+
   });
 
   return server;

@@ -35,3 +35,6 @@ gulp.task('default', function () {
   gulp.watch('ui/*.jade', ['templates']);
 
 });
+
+
+module.exports = function () { gulp.start('default') };

@@ -1,8 +1,5 @@
 // start watcher
-var
-  gulp     = require('gulp'),
-  gulpfile = require('./server/gulpfile.js');
-gulp.start('default');
+require('./server/gulpfile.js')();
 
 // start server
 var server = require('./server/server.js')({
@@ -11,6 +8,8 @@ var server = require('./server/server.js')({
 
   js:  [ 'libs/reflux/dist/reflux.js' 
        , 'libs/reqwest/reqwest.js'
+       , 'http://127.0.0.1:4000/socket.io/socket.io.js'
+       , 'app/osc.js'
        , 'app/rack.js'
        , 'app/init.js'
        ]
