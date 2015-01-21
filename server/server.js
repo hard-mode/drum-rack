@@ -66,9 +66,6 @@ module.exports = function (settings) {
   });
 
   var io = Socket(server.listener);
-  //io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
-  console.log(io.origins());
-  io.origins('*:*');
 
   io.sockets.on('connection', function (socket) {
 
@@ -76,7 +73,7 @@ module.exports = function (settings) {
       oscServer = new osc.Server(obj.server.port, obj.server.host);
       oscClient = new osc.Client(obj.server.host, obj.server.port);
 
-      oscClient.send('/status', socket.sessionId + ' connected');
+      oscClient.send('/status', 'connected');
 
       oscServer.on('message', function (msg, rinfo) {
         console.log(msg, rinfo);
