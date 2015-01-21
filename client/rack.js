@@ -39,15 +39,25 @@ H.DrumRack = function () {
   var pad = Reflux.createStore({
 
     init: function () {
+
+      for (var i = 0; i < pads.length; i++) {
+        var pad = pads[i];
+        pad.addEventListener('mousedown', function (event) {
+          actions.pad.click(this, event);
+        }.bind(pad));
+      };
+
       this.slots  = {};
       this.listenToMany(actions.pad);
+
     },
 
     click: function (pad, event) {
       var n = pad.dataset.number;
       if (this.slots[n]) {
-        console.log(event.target);
-        actions.pad.play(n);
+        if (event.target.classList.contains('pad-play-icon')) {
+          actions.pad.play(n);
+        }
       } else {
         actions.modal.open(pad);
       }
@@ -55,6 +65,7 @@ H.DrumRack = function () {
 
     load: function (pad, path) {
       this.slots[pad] = path;
+      H.OSC.emit('load', pad, path);
       for (var i = 0; i < pads.length; i++) {
         if (pads[i].dataset.number === pad) {
           pads[i].classList.remove('empty');
@@ -63,6 +74,7 @@ H.DrumRack = function () {
     },
 
     play: function (pad) {
+      H.OSC.emit('play', pad);
       console.log('badumtss');
     }
 
@@ -116,7 +128,7 @@ H.DrumRack = function () {
       this.results = this.element.getElementsByTagName('div')[0];
       this.results.innerHTML = s;
       var results = this.results.getElementsByTagName('div');
-      for (var i in results) {
+      for (var i = 0; i < results.length - 1; i++) {
         results[i].addEventListener('click', function (evt) {
           actions.modal.select(this, evt);
         }.bind(results[i]));
@@ -134,13 +146,6 @@ H.DrumRack = function () {
     }
 
   });
-
-  for (var i = 0; i < pads.length; i++) {
-    var pad = pads[i];
-    pad.addEventListener('click', function (event) {
-      actions.pad.click(this, event);
-    }.bind(pad));
-  };
 
 }
 
