@@ -126,10 +126,10 @@
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
         buf.push('<div class="timeline">');
         buf.push(templatizer["timeline"]["TimelineRuler"]());
-        var t = 0;
-        while (t < trackCount) {
-            t++;
-            buf.push(templatizer["timeline"]["TimelineTrack"](t));
+        var i = 0;
+        while (i < trackCount) {
+            i++;
+            buf.push(templatizer["timeline"]["TimelineTrack"](i));
         }
         buf.push(templatizer["timeline"]["TimelineCursor"]());
         buf.push("</div>");
@@ -140,7 +140,13 @@
     // timeline.jade:TimelineRuler compiled template
     templatizer["timeline"]["TimelineRuler"] = function tmpl_timeline_TimelineRuler() {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
-        buf.push('<div class="timeline-ruler"></div>');
+        buf.push('<div class="timeline-ruler">');
+        var i = 0;
+        while (i < 17) {
+            i++;
+            buf.push('<div class="timeline-ruler-tick"></div>');
+        }
+        buf.push("</div>");
         return buf.join("");
     };
 

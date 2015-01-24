@@ -1,14 +1,18 @@
 mixin Timeline(trackCount)
   .timeline
     +TimelineRuler
-    - var t = 0
-    while t < trackCount
-      - t++
-      +TimelineTrack(t)
+    - var i = 0
+    while i < trackCount
+      - i++
+      +TimelineTrack(i)
     +TimelineCursor
 
 mixin TimelineRuler
   .timeline-ruler
+    - var i = 0
+    while i < 17
+      - i++
+      .timeline-ruler-tick
 
 mixin TimelineTrack
   .timeline-track

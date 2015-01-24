@@ -196,12 +196,13 @@ body {
   margin-top: 24px;
   display: flex;
   flex-flow: column nowrap;
+  overflow-y: hidden;
 }
 .timeline-cursor {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 10px;
+  left: 0;
   width: 1px;
   background: rgba(255,255,255,0.3);
 }
@@ -224,9 +225,29 @@ body {
   width: 100%;
 }
 .timeline-ruler {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
   background: #000;
   height: 24px;
   width: 100%;
+  overflow-y: visible;
+}
+.timeline-ruler-tick {
+  height: 1000px;
+  z-index: 1;
+  width: 0;
+  border-left: 1px dashed transparent;
+  border-left-color: rgba(127,127,127,0.2);
+}
+.timeline-ruler-tick:nth-child(2n+1) {
+  border-left-color: rgba(127,127,127,0.3);
+}
+.timeline-ruler-tick:nth-child(4n+1) {
+  border-left-color: rgba(127,127,127,0.4);
+}
+.timeline-ruler-tick:nth-child(8n+1) {
+  border-left-color: rgba(127,127,127,0.5);
 }
 .timeline-track {
   border-top: 1px solid #181818;
