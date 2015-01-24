@@ -1,22 +1,19 @@
 (function(H) {
 
-var HTMLToDOMNode = function (html) {
-  var div = document.createElement('div');
-  div.innerHTML = html;
-  return div;
-}
-
 H.Timeline = function (n) {
 
   document.body.innerHTML += H.TEMPLATES.timeline.Timeline(n); 
 
-  var tracks = document.getElementsByClassName('timeline-track');
-
   var actions = {
     cursor: Reflux.createActions([
       'keydown',
+      'moveto',
       'left',
       'right'
+    ]),
+    track: Reflux.createActions([
+      'click',
+      'addclip'
     ])
   };
 
@@ -39,11 +36,11 @@ H.Timeline = function (n) {
     left: function () {
       var c    = this.cursor,
           left = parseInt(c.style.left) || 0;
+          w    = c.offsetParent.offsetWidth;
 
       left-=10;
-      if (left < 0) left = 0;
+      if (left < 0) left = w;
       c.style.left = left + 'px';
-      console.log(this.cursor.style.left);
     },
 
     right: function () {
@@ -52,14 +49,43 @@ H.Timeline = function (n) {
           w    = c.offsetParent.offsetWidth;
 
       left+=10;
-      if (left >= w) left = w - 1;
+      if (left >= w) left = 0;
       c.style.left = left + 'px';
-      console.log(this.cursor.style.left);
     }
 
   });
 
-  console.log(tracks);
+  var track = Reflux.createStore({
+
+    init: function () {
+      this.tracks = document.getElementsByClassName('timeline-track');
+      for (var i = 0; i < this.tracks.length; i++) {
+        var track = this.tracks[i];
+        track.addEventListener('click', function (event) {
+          actions.track.click(event, this);
+        }.bind(track));
+      }
+      this.listenToMany(actions.track);
+    },
+
+    click: function (event, track) {
+      var t = event.target;
+      if (t.classList.contains('timeline-track-grid')) {
+        actions.track.addclip(track, t);
+      }
+    },
+
+    addclip: function (track, grid) {
+      console.log(track, grid.dataset.number);
+      var clips = track.getElementsByClassName('timeline-track-clips')[0],
+          clip  = document.createElement('div');
+      clip.classList.add('timeline-track-clip');
+      console.log(grid.offsetLeft);
+      clip.style.left = grid.offsetLeft + 'px';
+      clips.appendChild(clip);
+    }
+
+  })
 
 };
 

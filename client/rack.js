@@ -1,11 +1,5 @@
 (function(H) {
 
-var HTMLToDOMNode = function (html) {
-  var div = document.createElement('div');
-  div.innerHTML = html;
-  return div;
-}
-
 H.DrumRack = function (n) {
 
   document.body.innerHTML += H.TEMPLATES.rack.SampleRack(n); 

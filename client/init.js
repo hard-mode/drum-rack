@@ -1,5 +1,11 @@
 (function (H) {
 
+  window.HTMLToDOMNode = function (html) {
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    return div;
+  }
+
   var N = 16;
 
   H.init = function () {

@@ -157,10 +157,10 @@
         buf.push('<div class="timeline-track">');
         var i = 0;
         while (i < 16) {
-            buf.push('<div class="timeline-track-grid"></div>');
+            buf.push("<div" + jade.attr("data-number", i, true, false) + ' class="timeline-track-grid"></div>');
             i++;
         }
-        buf.push("</div>");
+        buf.push('<div class="timeline-track-clips"></div></div>');
         return buf.join("");
     };
 

@@ -18,8 +18,9 @@ mixin TimelineTrack
   .timeline-track
     - var i = 0
     while i < 16
-      .timeline-track-grid
+      .timeline-track-grid(data-number=i)
       - i++
+    .timeline-track-clips
 
 mixin TimelineCursor
   .timeline-cursor
