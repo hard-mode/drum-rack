@@ -38,7 +38,7 @@ H.Timeline = function (n) {
 
     left: function () {
       var c    = this.cursor,
-          left = c.offsetLeft || 0;
+          left = parseInt(c.style.left) || 0;
 
       left-=10;
       if (left < 0) left = 0;
@@ -48,7 +48,7 @@ H.Timeline = function (n) {
 
     right: function () {
       var c    = this.cursor,
-          left = c.offsetLeft || 0,
+          left = parseInt(c.style.left) || 0,
           w    = c.offsetParent.offsetWidth;
 
       left+=10;

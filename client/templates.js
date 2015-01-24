@@ -142,9 +142,9 @@
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
         buf.push('<div class="timeline-ruler">');
         var i = 0;
-        while (i < 17) {
-            i++;
+        while (i < 16) {
             buf.push('<div class="timeline-ruler-tick"></div>');
+            i++;
         }
         buf.push("</div>");
         return buf.join("");
@@ -154,7 +154,13 @@
     // timeline.jade:TimelineTrack compiled template
     templatizer["timeline"]["TimelineTrack"] = function tmpl_timeline_TimelineTrack() {
         var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
-        buf.push('<div class="timeline-track"></div>');
+        buf.push('<div class="timeline-track">');
+        var i = 0;
+        while (i < 16) {
+            buf.push('<div class="timeline-track-grid"></div>');
+            i++;
+        }
+        buf.push("</div>");
         return buf.join("");
     };
 
