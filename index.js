@@ -12,6 +12,7 @@ var server = require('./server/server.js')({
        , 'app/osc.js'
        , 'app/rack.js'
        , 'app/timeline.js'
+       , 'app/transport.js'
        , 'app/init.js'
        ]
 

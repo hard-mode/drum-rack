@@ -76,12 +76,11 @@ H.Timeline = function (n) {
     },
 
     addclip: function (track, grid) {
-      console.log(track, grid.dataset.number);
       var clips = track.getElementsByClassName('timeline-track-clips')[0],
           clip  = document.createElement('div');
       clip.classList.add('timeline-track-clip');
-      console.log(grid.offsetLeft);
-      clip.style.left = grid.offsetLeft + 'px';
+      clip.style.left  = grid.offsetLeft  + 'px';
+      clip.style.width = grid.offsetWidth + 'px';
       clips.appendChild(clip);
     }
 

@@ -172,5 +172,20 @@
         return buf.join("");
     };
 
+    // transport.jade compiled template
+    templatizer["transport"] = function tmpl_transport(locals) {
+        var buf = [];
+        var jade_mixins = {};
+        var jade_interp;
+        return buf.join("");
+    };
+
+    // transport.jade:Transport compiled template
+    templatizer["transport"]["Transport"] = function tmpl_transport_Transport() {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        buf.push('<div class="transport"><div class="transport-rewind"></div><div class="transport-play"></div><div class="transport-record"></div><div class="transport-info">140 BPM</div><div class="transport-info">0:00 / 0:08</div></div>');
+        return buf.join("");
+    };
+
     return templatizer;
 }));
