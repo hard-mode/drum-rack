@@ -192,3 +192,46 @@ body {
 .search-result:hover {
   background: rgba(255,255,255,0.1);
 }
+.timeline {
+  margin-top: 24px;
+  display: flex;
+  flex-flow: column nowrap;
+}
+.timeline-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 1px;
+  background: rgba(255,255,255,0.3);
+}
+.timeline-cursor:after {
+  top: 0;
+  left: 50%;
+  border: solid transparent;
+  content: ' ';
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: rgba(0,0,0,0);
+  border-top-color: #888;
+  border-width: 6px;
+  margin-left: -6px;
+}
+.timeline-ruler,
+.timeline-track {
+  width: 100%;
+}
+.timeline-ruler {
+  background: #000;
+  height: 24px;
+  width: 100%;
+}
+.timeline-track {
+  border-top: 1px solid #181818;
+  border-bottom: 1px solid #2f2f2f;
+  background: #222;
+  height: 36px;
+  width: 100%;
+}

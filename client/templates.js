@@ -113,5 +113,52 @@
         return buf.join("");
     };
 
+    // timeline.jade compiled template
+    templatizer["timeline"] = function tmpl_timeline(locals) {
+        var buf = [];
+        var jade_mixins = {};
+        var jade_interp;
+        return buf.join("");
+    };
+
+    // timeline.jade:Timeline compiled template
+    templatizer["timeline"]["Timeline"] = function tmpl_timeline_Timeline(trackCount) {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        buf.push('<div class="timeline">');
+        buf.push(templatizer["timeline"]["TimelineRuler"]());
+        var t = 0;
+        while (t < trackCount) {
+            t++;
+            buf.push(templatizer["timeline"]["TimelineTrack"](t));
+        }
+        buf.push(templatizer["timeline"]["TimelineCursor"]());
+        buf.push("</div>");
+        return buf.join("");
+    };
+
+
+    // timeline.jade:TimelineRuler compiled template
+    templatizer["timeline"]["TimelineRuler"] = function tmpl_timeline_TimelineRuler() {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        buf.push('<div class="timeline-ruler"></div>');
+        return buf.join("");
+    };
+
+
+    // timeline.jade:TimelineTrack compiled template
+    templatizer["timeline"]["TimelineTrack"] = function tmpl_timeline_TimelineTrack() {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        buf.push('<div class="timeline-track"></div>');
+        return buf.join("");
+    };
+
+
+    // timeline.jade:TimelineCursor compiled template
+    templatizer["timeline"]["TimelineCursor"] = function tmpl_timeline_TimelineCursor() {
+        var block = this && this.block, attributes = this && this.attributes || {}, buf = [];
+        buf.push('<div class="timeline-cursor"></div>');
+        return buf.join("");
+    };
+
     return templatizer;
 }));

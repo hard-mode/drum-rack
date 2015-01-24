@@ -109,16 +109,14 @@ body
   border-radius pad-round pad-round 0 0
   justify-content center
 
-.pad-play-icon {
+.pad-play-icon
   height       42px
   line-height  42px
   font-size    18px
   color       white
   text-align center
-
   opacity    0
   transition opacity 0.1s
-}
 
 .pad:not(.empty):hover .pad-play-icon {
   opacity 0.5
@@ -206,3 +204,48 @@ body
   cursor pointer
   &:hover
     background rgba(255,255,255,0.1)
+
+
+// TIMELINE
+
+.timeline
+  margin-top 24px
+  display flex
+  flex-flow column nowrap
+
+.timeline-cursor
+  position absolute
+  top 0
+  bottom 0
+  left 10px
+  width 1px
+  background rgba(255,255,255,0.3)
+  &:after
+    top      0
+    left     50%
+    border   solid transparent
+    content  ' '
+    height   0
+    width    0
+    position absolute
+    pointer-events none
+    border-color rgba(0,0,0,0);
+    border-top-color #888
+    border-width 6px
+    margin-left -6px
+
+.timeline-ruler,
+.timeline-track
+  width 100%
+
+.timeline-ruler
+  background black
+  height 24px
+  width 100%
+
+.timeline-track
+  border-top    1px solid #181818
+  border-bottom 1px solid #2f2f2f
+  background #222
+  height 36px
+  width 100%

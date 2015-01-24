@@ -6,9 +6,9 @@ var HTMLToDOMNode = function (html) {
   return div;
 }
 
-H.DrumRack = function () {
+H.DrumRack = function (n) {
 
-  document.body.innerHTML += H.TEMPLATES.rack.SampleRack(16); 
+  document.body.innerHTML += H.TEMPLATES.rack.SampleRack(n); 
 
   var pads = document.getElementsByClassName('pad');
 

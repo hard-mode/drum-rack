@@ -1,0 +1,17 @@
+mixin Timeline(trackCount)
+  .timeline
+    +TimelineRuler
+    - var t = 0
+    while t < trackCount
+      - t++
+      +TimelineTrack(t)
+    +TimelineCursor
+
+mixin TimelineRuler
+  .timeline-ruler
+
+mixin TimelineTrack
+  .timeline-track
+
+mixin TimelineCursor
+  .timeline-cursor

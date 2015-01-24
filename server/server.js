@@ -97,7 +97,7 @@ module.exports = function (settings) {
       PADS[pad] = {
         process: cp.spawn(SAMPLER, [samplePath],
                           {stdio: 'inherit'}),
-        osc: new osc.Client('localhost', 7770)
+        osc: new osc.Client('localhost', 321)
       };
     });
 

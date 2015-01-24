@@ -11,6 +11,7 @@ var server = require('./server/server.js')({
        , 'http://127.0.0.1:4000/socket.io/socket.io.js'
        , 'app/osc.js'
        , 'app/rack.js'
+       , 'app/timeline.js'
        , 'app/init.js'
        ]
 
