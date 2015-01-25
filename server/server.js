@@ -4,6 +4,7 @@ var
   Socket    = require('socket.io'),
   cp        = require('child_process'),
   osc       = require('node-osc'),
+  freeport  = require('freeport'),
   templates = require('../client/templates.js');
 
 var
@@ -93,12 +94,14 @@ module.exports = function (settings) {
 
     socket.on('load', function (pad, path) {
       var samplePath = SAMPLE_DIR + '/' + path;
-      console.log('load', samplePath);
-      PADS[pad] = {
-        process: cp.spawn(SAMPLER, [samplePath],
-                          {stdio: 'inherit'}),
-        osc: new osc.Client('localhost', 321)
-      };
+      freeport(function(err, port) {
+        console.log('load', samplePath, port);
+        PADS[pad] = {
+          process: cp.spawn(SAMPLER, ['-p', port, samplePath],
+                            {stdio: 'inherit'}),
+          osc: new osc.Client('localhost', port)
+        };
+      });
     });
 
     socket.on('play', function (pad) {
