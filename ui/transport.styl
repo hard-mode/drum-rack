@@ -1,0 +1,70 @@
+.transport
+  background rgba(255,255,255,0.05);
+  padding 6px
+  display flex
+  flex-flow row nowrap
+
+.transport-rewind,
+.transport-play,
+.transport-record,
+.transport-info
+  height 48px
+  border-radius 3px
+  background rgba(255,255,255,0.075);
+  margin-right 6px
+
+.transport-rewind
+  width 24px
+  margin-left 12px
+  &:after
+    bottom   0%
+    right    100%
+    border   solid transparent
+    content  ' '
+    height   0
+    width    0
+    position absolute
+    pointer-events none
+    border-color rgba(0,0,0,0);
+    border-right-color rgba(255,255,255,0.075);
+    border-width 24px 12px 24px 12px
+    margin-left -12px
+  &:hover
+    background rgba(255,255,255,0.1)
+    &:after
+      border-right-color rgba(255,255,255,0.1)
+
+.transport-play
+  width 48px
+  margin-right 18px
+  &:after
+    bottom   0%
+    left    100%
+    border   solid transparent
+    content  ' '
+    height   0
+    width    0
+    position absolute
+    pointer-events none
+    border-color rgba(0,0,0,0);
+    border-left-color rgba(255,255,255,0.075);
+    border-width 24px 12px 24px 12px
+  &:hover
+    background rgba(255,255,255,0.1)
+    &:after
+      border-left-color rgba(255,255,255,0.1)
+
+.transport-record
+  width 48px
+  border-radius 100%
+  &:hover
+    background rgba(255,255,255,0.1)
+
+.transport-info
+  padding 0 24px
+  line-height 48px
+  letter-spacing 1px
+  font-size 14px
+  color #ddd
+  background rgba(0,0,0,0.1);
+

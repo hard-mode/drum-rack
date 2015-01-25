@@ -4,7 +4,10 @@ require('./server/gulpfile.js')();
 // start server
 var server = require('./server/server.js')({
 
-  css: [ 'app/rack.css' ],
+  css: [ 'app/global.css'
+       , 'app/rack.css'
+       , 'app/timeline.css'
+       , 'app/transport.css' ],
 
   js:  [ 'libs/reflux/dist/reflux.js' 
        , 'libs/reqwest/reqwest.js'

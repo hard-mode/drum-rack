@@ -2,7 +2,7 @@
 
 H.Timeline = function (n) {
 
-  document.body.innerHTML += H.TEMPLATES.timeline.Timeline(n); 
+  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.timeline.Timeline(n)));
 
   var actions = {
     cursor: Reflux.createActions([
@@ -84,7 +84,7 @@ H.Timeline = function (n) {
       clips.appendChild(clip);
     }
 
-  })
+  });
 
 };
 

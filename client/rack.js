@@ -2,7 +2,7 @@
 
 H.DrumRack = function (n) {
 
-  document.body.innerHTML += H.TEMPLATES.rack.SampleRack(n); 
+  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.rack.SampleRack(n)));
 
   var pads = document.getElementsByClassName('pad');
 

@@ -2,7 +2,7 @@
 
 H.Transport = function () {
 
-  document.body.innerHTML += H.TEMPLATES.transport.Transport(); 
+  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.transport.Transport()));
 
 }
 
