@@ -127,8 +127,9 @@ body {
 }
 .editor-waveform {
   flex-grow: 1;
-  background: #ffd;
+  background: #222;
   margin-top: 6px;
+  border-radius: 6px;
 }
 .editor-controls {
   display: flex;
@@ -194,9 +195,11 @@ body {
 }
 .timeline {
   background: #222;
+  margin: 0 6px 6px;
   display: flex;
   flex-flow: column nowrap;
   overflow-y: hidden;
+  border-radius: 6px;
 }
 .timeline-cursor {
   position: absolute;
