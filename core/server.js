@@ -12,6 +12,50 @@ var
   SAMPLER    = '/home/epimetheus/code/hardmode/postmelodic/bin/sample_player',
   PADS       = {};
 
+var ROUTES =
+  [ { path:    '/'
+    , method:  'GET'
+    , handler: function(request, reply) {
+        reply(templates.app({
+          css: config.css,
+          js:  config.js
+        }));
+      }
+    }
+
+  , { path:   '/app/{path*}',
+    , method: 'GET',
+    , handler: { directory: { path: 'client/' } }
+    }
+
+  , { path:   '/libs/{path*}'
+    , method: 'GET'
+    , handler: { directory: { path: 'bower_components/' } }
+    }
+
+  , { path:    '/static/{path*}'
+    , method:  'GET'
+    , handler: { directory: { path: 'static/' } }
+    }
+
+  , { path:    '/sample'
+    , method:  'GET'
+    , handler: function(request, reply) {
+        console.log(request.query.q);
+        fs.readdir(SAMPLE_DIR, function (err, files) {
+          if (!err) {
+            reply(files.filter(function (f) {
+              return -1 !== f.toLowerCase().indexOf(request.query.q) &&
+                     -1 === f.toLowerCase().indexOf('.asd') }));
+          } else {
+            console.log(err);
+            reply(err);
+          }
+        })
+      }
+    }
+  ];
+
 var oscServer, oscClient;
 
 module.exports = function (settings) {
@@ -22,58 +66,10 @@ module.exports = function (settings) {
   }
 
   var server = new Hapi.Server();
-
   server.connection({ port: 4000 });
-
-  server.route({
-    method:  'GET',
-    path:    '/',
-    handler: function(request, reply) {
-      reply(templates.app({
-        css: config.css,
-        js:  config.js
-      }));
-    }
-  });
-
-  server.route({
-    method: 'GET',
-    path:   '/app/{path*}',
-    handler: { directory: { path: 'client/' } }
-  });
-
-  server.route({
-    method: 'GET',
-    path:   '/libs/{path*}',
-    handler: { directory: { path: 'bower_components/' } }
-  });
-
-  server.route({
-    method:  'GET',
-    path:    '/static/{path*}',
-    handler: { directory: { path: 'static/' } }
-  });
-
-  server.route({
-    method:  'GET',
-    path:    '/sample',
-    handler: function(request, reply) {
-      console.log(request.query.q);
-      fs.readdir(SAMPLE_DIR, function (err, files) {
-        if (!err) {
-          reply(files.filter(function (f) {
-            return -1 !== f.toLowerCase().indexOf(request.query.q) &&
-                   -1 === f.toLowerCase().indexOf('.asd') }));
-        } else {
-          console.log(err);
-          reply(err);
-        }
-      })
-    }
-  });
+  for (var i in ROUTES) server.route(ROUTES[i]);
 
   var io = Socket(server.listener);
-
   io.sockets.on('connection', function (socket) {
 
     socket.on('config', function (obj) {

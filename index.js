@@ -1,8 +1,8 @@
 // start watcher
-require('./server/gulpfile.js')();
+require('./core/gulpfile.js')();
 
 // start server
-var server = require('./server/server.js')({
+var server = require('./core/server.js')({
 
   css: [ 'app/global.css'
        , 'app/rack.css'

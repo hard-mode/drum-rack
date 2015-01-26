@@ -10,7 +10,7 @@ gulp.task('templates', function () {
   console.log('Rebuilding templates.');
   templatizer(
     __dirname + '/../ui',
-    __dirname + '/../client/templates.js',
+    __dirname + '/../.cache/templates.js',
     { namespace:        'HARDMODE',
       dontRemoveMixins: true });
 });
