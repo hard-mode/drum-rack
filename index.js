@@ -66,6 +66,8 @@ Application.prototype = {
 
       app.compileTemplates(path.join('.', 'modules'));
 
+      app.compileStylesheets(path.join('.', 'modules'));
+
       app.startWatcher();
 
       app.startServer();
@@ -99,7 +101,7 @@ Application.prototype = {
 
         } else if (endsWith(filepath, '.styl')) {
 
-          // TODO compile stylesheets
+          app.compileStylesheets(path.dirname(filepath));
 
         }
 
@@ -127,6 +129,75 @@ Application.prototype = {
 
     app.httpServer.start(function () {
       console.log('Server running at:', app.httpServer.info.uri);
+    });
+
+  },
+
+  compileTemplates: function (srcdir) {
+
+    // all compiled jade templates are concatenated together by
+    // templatizer (https://github.com/HenrikJoreteg/templatzer).
+    // it can only write them to a file, though, so we use tmp as
+    // a momentary workaround to read them into redis.
+
+    var app = this;
+
+    tmp.file(function (err, temppath) {
+
+      if (err) throw err;
+
+      templatizer(
+        srcdir,
+        temppath,
+        { namespace: 'HARDMODE'
+        , dontRemoveMixins: true });
+
+      fs.readFile(
+        temppath,
+        { encoding: 'utf8' },
+        function (err, data) {
+          if (err) throw err;
+          app.redisClient.set('templates', data);
+        });
+
+      app.templates = require(temppath);
+
+    });
+
+  },
+
+  compileStylesheets: function (srcdir) {
+
+    fs.readdir(srcdir, function (err, files) {
+
+      var directories = files.filter(
+        function (f) {
+          try {
+            return fs.statSync(path.join(srcdir, f)).isDirectory();
+          } catch (e) {
+            return false;
+          }
+        }
+      );
+
+      var styl = stylus('');
+
+      styl.set('paths', [srcdir]);
+      styl.set('filename', 'style.css');
+
+      styl.import('global');
+
+      for (var i in directories) {
+        var d = directories[i];
+        styl.import(d + '/' + d);
+      }
+
+      styl.render(function (err, css) {
+
+        app.redisClient.set('stylesheet', css);
+
+      });
+
     });
 
   },
@@ -169,40 +240,23 @@ Application.prototype = {
         }
       }
 
-    ],
+    , { path:    '/styles.css'
+      , method:  'GET'
+      , handler: function (request, reply) {
 
-  compileTemplates: function (srcdir) {
+          var app = this;
 
-    // all compiled jade templates are concatenated together by
-    // templatizer (https://github.com/HenrikJoreteg/templatzer).
-    // it can only write them to a file, though, so we use tmp as
-    // a momentary workaround to read them into redis.
+          app.redisClient.get('stylesheet', function (err, data) {
 
-    var app = this;
+            if (err) throw err;
 
-    tmp.file(function (err, temppath) {
+            reply(data).type('text/css');
 
-      if (err) throw err;
+          })
 
-      templatizer(
-        srcdir,
-        temppath,
-        { namespace: 'HARDMODE'
-        , dontRemoveMixins: true });
+        }}
 
-      fs.readFile(
-        temppath,
-        { encoding: 'utf8' },
-        function (err, data) {
-          if (err) throw err;
-          app.redisClient.set('templates', data);
-        });
-
-      app.templates = require(temppath);
-
-    });
-
-  }
+    ]
 
 }
 
