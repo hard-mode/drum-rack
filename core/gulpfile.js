@@ -29,10 +29,10 @@ gulp.task('default', function () {
   liveReload.listen();
 
   gulp.start('stylesheets');
-  gulp.watch('ui/*.styl', ['stylesheets']);
+  gulp.watch('ui/**/*.styl', ['stylesheets']);
 
   gulp.start('templates');
-  gulp.watch('ui/*.jade', ['templates']);
+  gulp.watch('ui/**/*.jade', ['templates']);
 
 });
 
