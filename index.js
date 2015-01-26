@@ -8,7 +8,8 @@ var child       = require('child_process')  // spawning stuff
   , redis       = require('redis')          // fast datastore
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
-  , tmp         = require('tmp');           // get temp files
+  , tmp         = require('tmp')            // get temp files
+  , vm          = require('vm')             // eval templates
 
 
 // https://github.com/raszi/node-tmp#graceful-cleanup
@@ -21,6 +22,7 @@ var Application = function () {
   this.redisClient = null;
   this.httpServer  = null;
   this.templates   = null;
+  this.templateVM  = vm.createContext();
 
   var app = this;
 
@@ -62,6 +64,8 @@ Application.prototype = {
         '127.0.0.1',
         {});
 
+      app.compileTemplates(path.join('.', 'modules'));
+
       app.startWatcher();
 
       app.startServer();
@@ -74,8 +78,10 @@ Application.prototype = {
 
     var app = this;
 
+    if (app.watcher) return;
+
     // watch modules directory for changes
-    gaze('modules/**/*', function (err, watcher) {
+    app.watcher = gaze('modules/**/*', function (err, watcher) {
 
       if (err) throw err;
 
@@ -104,14 +110,66 @@ Application.prototype = {
   },
 
   startServer: function () {
-    // web server
-    //httpServer = new hapi.Server();
-    //httpServer.connection({ port: 4000 });
-    //httpServer.route(
-      //{ path:    '/'
-      //, method:  'GET'
-      //, handler: });
+
+    var app = this;
+
+    if (app.httpServer) return;
+
+    app.httpServer = new hapi.Server();
+    app.httpServer.connection({ port: 4000 });
+
+    for (var i in app.serverRoutes) {
+      var route = app.serverRoutes[i];
+      route.handler = route.handler.bind(app);
+      console.log("Registering route", route.method || "GET", route.path);
+      app.httpServer.route(route);
+    }
+
+    app.httpServer.start(function () {
+      console.log('Server running at:', app.httpServer.info.uri);
+    });
+
   },
+
+  serverRoutes:
+    [ { path:    '/'
+      , method:  'GET'
+      , handler: function (request, reply) {
+
+          var app = this;
+
+          app.redisClient.get('templates', function (err, data) {
+
+            if (err) throw err;
+
+            reply(app.templates.app(
+              { css: []
+              , js:  [] }
+            ));
+
+          });
+
+        }
+      }
+
+    , { path:    '/templates.js'
+      , method:  'GET'
+      , handler: function (request, reply) {
+
+          var app = this;
+
+          app.redisClient.get('templates', function (err, data) {
+
+            if (err) throw err;
+
+            reply(data).type('text/javascript');
+
+          });
+
+        }
+      }
+
+    ],
 
   compileTemplates: function (srcdir) {
 
@@ -140,9 +198,7 @@ Application.prototype = {
           app.redisClient.set('templates', data);
         });
 
-      templates = require(temppath);
-
-      console.log(templates)
+      app.templates = require(temppath);
 
     });
 
