@@ -140,6 +140,8 @@ Application.prototype = {
     // it can only write them to a file, though, so we use tmp as
     // a momentary workaround to read them into redis.
 
+    console.log("Compiling templates.");
+
     var app = this;
 
     tmp.file(function (err, temppath) {
@@ -168,6 +170,8 @@ Application.prototype = {
 
   compileStylesheets: function (srcdir) {
 
+    console.log("Compiling stylesheets.");
+
     fs.readdir(srcdir, function (err, files) {
 
       var directories = files.filter(
@@ -182,10 +186,10 @@ Application.prototype = {
 
       var styl = stylus('');
 
-      styl.set('paths', [srcdir]);
+      styl.set('paths',    [srcdir]);
       styl.set('filename', 'style.css');
 
-      styl.import('global');
+      //styl.import('global');
 
       for (var i in directories) {
         var d = directories[i];
@@ -193,6 +197,8 @@ Application.prototype = {
       }
 
       styl.render(function (err, css) {
+
+        if (err) throw err;
 
         app.redisClient.set('stylesheet', css);
 
