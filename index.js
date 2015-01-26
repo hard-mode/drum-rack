@@ -1,45 +1,80 @@
-var child       = require('child_process')
-  , freeport    = require('freeport')
-  , fs          = require('fs')
-  , gaze        = require('gaze')
-  , jade        = require('jade')
-  , path        = require('path')
-  , redis       = require('redis')
-  , stylus      = require('stylus')
-  , templatizer = require('templatizer')
-  , tmp         = require('tmp');
+var child       = require('child_process')  // spawning stuff
+  , freeport    = require('freeport')       // get free ports
+  , fs          = require('fs')             // filesystem ops
+  , gaze        = require('gaze')           // watching files
+  , hapi        = require('hapi')           // http framework
+  , jade        = require('jade')           // html templates
+  , path        = require('path')           // path operation
+  , redis       = require('redis')          // fast datastore
+  , stylus      = require('stylus')         // css preprocess
+  , templatizer = require('templatizer')    // glue templates
+  , tmp         = require('tmp');           // get temp files
 
 
+// https://github.com/raszi/node-tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
 
-var redisServer
-  , redisClient;
+var Application = function () {
+
+  this.redisServer = null;
+  this.redisClient = null;
+  this.httpServer  = null;
+  this.templates   = null;
+
+  var app = this;
+
+  freeport(function (err, port) {
+
+    if (err) throw err;
+
+    app.startRedis(port);
+
+  });
+
+};
 
 
-freeport(function (err, port) {
+Application.prototype = {
 
-  if (err) throw err;
+  constructor: Application,
 
-  // start redis
-  redisServer = child.spawn(
-    'redis-server',
-    [ '--port', port ],
-    { stdio: [ 'ignore'
-             , 'pipe'
-             , 'pipe' ] } );
+  startRedis: function (port) {
 
-  // connect to redis
-  redisServer.stdout.on('data', function () {
+    var app = this;
 
-    if (redisClient) return;
+    // start redis
+    app.redisServer = child.spawn(
+      'redis-server',
+      [ '--port', port ],
+      { stdio: [ 'ignore'
+               , 'pipe'
+               , 'pipe' ] } );
 
-    redisClient = redis.createClient(
-      port,
-      '127.0.0.1',
-      {});
+    // connect to redis
+    // FIXME: execute callback only once
+    app.redisServer.stdout.on('data', function () {
 
-    // watch modules for changes
+      if (this.redisClient) return;
+
+      app.redisClient = redis.createClient(
+        port,
+        '127.0.0.1',
+        {});
+
+      app.startWatcher();
+
+      app.startServer();
+
+    });
+
+  },
+
+  startWatcher: function () {
+
+    var app = this;
+
+    // watch modules directory for changes
     gaze('modules/**/*', function (err, watcher) {
 
       if (err) throw err;
@@ -54,36 +89,76 @@ freeport(function (err, port) {
 
         if (endsWith(filepath, '.jade')) {
 
-          tmp.file(function (err, temppath) {
-
-            if (err) throw err;
-
-            templatizer(
-              path.dirname(filepath),
-              temppath,
-              { namespace: 'HARDMODE'
-              , dontRemoveMixins: true });
-
-            fs.readFile(
-              temppath,
-              { encoding: 'utf8' },
-              function (err, data) {
-                if (err) throw err;
-                redisClient.set('templates', data);
-              });
-
-          })
+          app.compileTemplates(path.dirname(filepath));
 
         } else if (endsWith(filepath, '.styl')) {
+
+          // TODO compile stylesheets
+
         }
 
-      })
+      });
 
-    })
+    });
 
-  });
+  },
 
-})
+  startServer: function () {
+    // web server
+    //httpServer = new hapi.Server();
+    //httpServer.connection({ port: 4000 });
+    //httpServer.route(
+      //{ path:    '/'
+      //, method:  'GET'
+      //, handler: });
+  },
+
+  compileTemplates: function (srcdir) {
+
+    // all compiled jade templates are concatenated together by
+    // templatizer (https://github.com/HenrikJoreteg/templatzer).
+    // it can only write them to a file, though, so we use tmp as
+    // a momentary workaround to read them into redis.
+
+    var app = this;
+
+    tmp.file(function (err, temppath) {
+
+      if (err) throw err;
+
+      templatizer(
+        srcdir,
+        temppath,
+        { namespace: 'HARDMODE'
+        , dontRemoveMixins: true });
+
+      fs.readFile(
+        temppath,
+        { encoding: 'utf8' },
+        function (err, data) {
+          if (err) throw err;
+          app.redisClient.set('templates', data);
+        });
+
+      templates = require(temppath);
+
+      console.log(templates)
+
+    });
+
+  }
+
+}
+
+
+module.exports = Application;
+
+
+if (require.main === module) {
+
+  var app = new Application();
+
+}
 
 
 // start watcher
