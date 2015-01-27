@@ -4,7 +4,7 @@ H.Timeline = function (options) {
 
   this.el = HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(options)).firstChild;
 
-  document.body.appendChild(this.el);
+  return;
 
   var actions = {
     cursor: Reflux.createActions([
