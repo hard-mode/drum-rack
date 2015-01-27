@@ -224,7 +224,7 @@ Application.prototype = {
             var projectData = {}
 
             if (app.projectFile) {
-              projectData = yaml.safeLoad(fs.readFileSync(app.projectFile));
+              projectData = yaml.load(fs.readFileSync(app.projectFile));
             }
 
             console.log(projectData);

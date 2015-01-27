@@ -4,7 +4,7 @@ author: Mlad Konstruktor <fallenblood@gmail.com>
 
 version: 0.0.1
 
-uses:
+using:
   - rack
   - pads
   - sample-editor
@@ -14,8 +14,8 @@ uses:
 
 workspace:
   - rack:
-    - transport
-    - timeline
+    - Transport
+    - Timeline
   - rack:
-    - pads
-    - sample-editor
+    - PadGrid
+    - SampleEditor

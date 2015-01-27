@@ -2,7 +2,7 @@
 
 H.Timeline = function (n) {
 
-  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.timeline.Timeline(n)));
+  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(n)));
 
   var actions = {
     cursor: Reflux.createActions([

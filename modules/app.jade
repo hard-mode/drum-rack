@@ -14,7 +14,26 @@ html
       | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer
       | delete window.HARDMODE.templatizer
 
-    each u in uses
+    each u in using
       script(src='modules/' + u)
 
+    script.
+      window.HTMLToDOMNode = function (html) {
+        var div = document.createElement('div');
+        div.innerHTML = html;
+        return div;
+      }
+      
   body
+
+    script
+      |window.HARDMODE.Workspace = [
+      each rack in workspace
+        | [
+        each unit in rack
+          each module in unit
+            |new HARDMODE.
+            =module
+            |(),
+        | ],
+      |];
