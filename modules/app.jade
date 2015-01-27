@@ -11,11 +11,11 @@ html
     script window.HARDMODE = {};
     script(src='templates.js')
     script
-      | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer
-      | delete window.HARDMODE.templatizer
+      | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer;
+      | delete window.HARDMODE.templatizer;
 
-    each u in session.using
-      script(src='modules/' + u)
+    each v, k in session.using
+      script(src='modules/' + k)
 
     script.
       window.HTMLToDOMNode = function (html) {

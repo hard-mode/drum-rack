@@ -27,10 +27,8 @@ Using = function () {
         session.using[args[i]] = require(p);
       } catch (e) {
         console.log('Could not find', p);
+        session.using[args[i]] = null;
       }
-      //console.log(p);
-      //session.using[args[i]] = require('../modules/' + args[i] + 'server.js');
-      //session.using.push(args[i]);
     }
   }
 };

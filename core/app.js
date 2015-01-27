@@ -238,16 +238,13 @@ Application.prototype = {
 
             if (app.projectFile) {
               vm.runInContext(
-                //'console.log(session, require("path"), require(path.resolve("core/api-context.js")));',
                 fs.readFileSync(app.projectFile),
                 app.projectVM,
                 app.projectFile);
             }
 
-            reply('foo');
-
-            //reply(app.projectVM.HARDMODE.templatizer.app(
-              //app.projectVM.HARDMODE.session));
+            reply(app.projectVM.HARDMODE.templatizer.app(
+              app.projectVM.HARDMODE.session));
 
           });
 
