@@ -2,8 +2,10 @@ module.exports = function (Session) {
 
   var Rack = function (session, name) {
     this.session    = session;
-    this.name       = name;
     this.components = [];
+    this.client     = 'Rack';
+
+    this.name       = name;
   }
 
   Session.prototype.rack = function (name) {

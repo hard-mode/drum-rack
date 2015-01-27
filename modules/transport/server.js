@@ -2,6 +2,8 @@ module.exports = function (Session) {
 
   var Transport = function (session, options) {
     this.session = session;
+    this.client  = 'Transport';
+
     this.tempo   = options.tempo;
     this.meter   = options.meter;
   }

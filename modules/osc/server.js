@@ -3,48 +3,67 @@ var Socket   = require('socket.io'),
     osc      = require('node-osc'),
     freeport = require('freeport');
 
-var oscServer, oscClient;
 
-module.exports = function () {
-  var io = Socket(server.listener);
-  io.sockets.on('connection', function (socket) {
+module.exports = function (Session) {
 
-    socket.on('config', function (obj) {
-      oscServer = new osc.Server(obj.server.port, obj.server.host);
-      oscClient = new osc.Client(obj.server.host, obj.server.port);
+  var OSCInterface = function () {
 
-      oscClient.send('/status', 'connected');
+    this.oscServer = null;
+    this.oscClient = null;
+    this.io = Socket(server.listener);
 
-      oscServer.on('message', function (msg, rinfo) {
-        console.log(msg, rinfo);
-        socket.emit('message', msg);
+    this.io.sockets.on('connection', function (socket) {
+
+      socket.on('config', function (obj) {
+
+        this.oscServer = new osc.Server(obj.server.port, obj.server.host);
+        this.oscClient = new osc.Client(obj.server.host, obj.server.port);
+
+        this.oscClient.send('/status', 'connected');
+
+        this.oscServer.on('message', function (msg, rinfo) {
+          console.log(msg, rinfo);
+          socket.emit('message', msg);
+        });
+
+        socket.on('message', function (obj) {
+          this.oscClient.send(obj);
+        });
+
+      })
+
+      socket.on('load', function (pad, path) {
+
+        var samplePath = SAMPLE_DIR + '/' + path;
+
+        freeport(function(err, port) {
+          console.log('load', samplePath, port);
+          PADS[pad] = {
+            process:
+              child.spawn(
+                SAMPLER,
+                ['-p', port, samplePath],
+                {stdio: 'inherit'}),
+            osc:
+              new osc.Client('localhost', port)
+          };
+        });
+
       });
 
-      socket.on('message', function (obj) {
-        oscClient.send(obj);
-      });
-    })
+      socket.on('play', function (pad) {
 
-    socket.on('load', function (pad, path) {
-      var samplePath = SAMPLE_DIR + '/' + path;
-      freeport(function(err, port) {
-        console.log('load', samplePath, port);
-        PADS[pad] = {
-          process: child.spawn(SAMPLER, ['-p', port, samplePath],
-                            {stdio: 'inherit'}),
-          osc: new osc.Client('localhost', port)
-        };
+        if (PADS[pad]) {
+          console.log('Hit pad', pad);
+          PADS[pad].osc.send('/play', 0, 0);
+        } else {
+          console.log('Pad', pad, 'empty');
+        }
+
       });
+
     });
+  }
 
-    socket.on('play', function (pad) {
-      if (PADS[pad]) {
-        console.log('Hit pad', pad);
-        PADS[pad].osc.send('/play', 0, 0);
-      } else {
-        console.log('Pad', pad, 'empty');
-      }
-    });
 
-  });
-};
+}
