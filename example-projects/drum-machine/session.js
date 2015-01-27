@@ -1,41 +1,37 @@
-Session(
+session
 
-  Metadata({
-    name:    'Drum Machine Demo',
-    author:  'Mlad Konstruktor <fallenblood@gmail.com>', 
+.info(
+  { name:    'Drum Machine Demo',
+    author:  'Mlad Konstruktor <fallenblood@gmail.com>',
     version: '0.0.1',
     key:     'C#m',
-    tempo:   140
-  }),
+    tempo:   140 })
 
-  Using('rack',
-        'osc',
-        'pads',
-        'sample-editor',
-        'timeline',
-        'transport',
-        'mixer'),
+.use('rack',
+     'osc',
+     'pads',
+     'sample-editor',
+     'timeline',
+     'transport',
+     'mixer' )
 
-  function (session) {
+//.osc()
 
-    var u         = session.using,
-        Rack      = u.rack.Rack,
-        Transport = u.transport.Transport,
-        Timeline  = u.timeline.Timeline;
+.rack('Sequencing')
 
-    Rack(
-      'Sequencing',
-      Transport({ tempo: 140, meter: [4,4] }),
-      Timeline({ tracks: 16 })
-    );
+  .transport({ tempo: 140
+             , meter: [4, 4] })
 
-    //Rack(
-      //'Sampling',
-      //Pads({ grid: [4, 4] }),
-      //Editor(),
-      //Mixer({ tracks: 16 })
-    //);
+.end()
 
-  }
+.rack('Sampling')
 
-);
+.end()
+
+//
+
+  //.transport.Transport({ tempo: 140 
+                       //, meter: [4, 4]})
+
+  //.timeline.Timeline({ tracks: 16 })
+
