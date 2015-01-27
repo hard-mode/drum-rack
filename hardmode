@@ -2,4 +2,4 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-node $DIR/core/app.js $*
+node --stack-trace-limit=50 $DIR/core/app.js $*

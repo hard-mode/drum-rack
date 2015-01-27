@@ -35,12 +35,6 @@ var Application = function (projectFile) {
   // create sandboxed context for server-side execution of projects
   this.projectVM = vm.createContext(require('./project-context.js'));
 
-  // define a few basic api functions for defininf projects
-  vm.runInContext(
-    fs.readFileSync(path.resolve('core/project-api.js')),
-    this.projectVM,
-    '<project_api>');
-
   // global state
   this.redisServer = null;
   this.redisClient = null;
@@ -254,8 +248,10 @@ Application.prototype = {
                 app.projectFile);
             }
 
+            console.log(app.projectVM.session);
+
             reply(app.projectVM.HARDMODE.templatizer.app(
-              app.projectVM.HARDMODE.session));
+              app.projectVM.session));
 
           });
 

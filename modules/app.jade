@@ -4,7 +4,7 @@ html
 
   head
 
-    title= name
+    title= metadata.name
 
     link(rel='stylesheet',href='/styles.css')
 
@@ -14,7 +14,7 @@ html
       | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer;
       | delete window.HARDMODE.templatizer;
 
-    each v, k in session.using
+    each v, k in using
       script(src='modules/' + k)
 
     script.
