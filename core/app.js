@@ -248,6 +248,8 @@ Application.prototype = {
                 app.projectFile);
             }
 
+            console.log(app.projectVM.session);
+
             reply(app.projectVM.HARDMODE.templatizer.app(
               app.projectVM.session));
 

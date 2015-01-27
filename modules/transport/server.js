@@ -1,8 +1,17 @@
-module.exports = {
+module.exports = function (Session) {
 
-  Transport: function (name) {
+  var Transport = function (session, options) {
+    this.session = session;
+    this.tempo   = options.tempo;
+    this.meter   = options.meter;
+  }
 
-    console.log("TRANSPORT", name)
+  Session.prototype.transport = function (options) {
+
+    var t = new Transport(this, options);
+    this._add(t);
+
+    return this;
 
   }
 

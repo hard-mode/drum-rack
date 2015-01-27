@@ -6,16 +6,6 @@ module.exports = function (Session) {
     this.components = [];
   }
 
-  Rack.prototype = {
-
-    constructor: Rack,
-
-    _add: function (component) {
-      this.components.push(component);
-    }
-
-  }
-
   Session.prototype.rack = function (name) {
 
     // add rack to session components
@@ -24,7 +14,7 @@ module.exports = function (Session) {
 
     // rack takes over subsequent additions
     r._addToParent = this._add;
-    this._add      = r._add;
+    this._add      = this._add.bind(r);
 
     // until this method is called to end rack
     this.end = function () {
