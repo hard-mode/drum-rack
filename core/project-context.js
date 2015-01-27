@@ -2,9 +2,9 @@ var path = require('path');
 
 
 var Session = function () {
-  this.using    = {};
-  this.metadata = {};
-  this.modules  = [];
+  this.using      = {};
+  this.metadata   = {};
+  this.components = [];
 };
 
 
@@ -23,14 +23,19 @@ Session.prototype = {
     for (var i in arguments) {
       var p = path.resolve(path.join('modules', arguments[i], 'server.js'));
       try {
-        console.log('Using', p)
+        console.log('\nUsing', p)
         this.using[arguments[i]] = require(p);
+        this.using[arguments[i]](Session);
       } catch (e) {
-        console.log('Could not find', p);
+        console.log('\nCould not load', p, 'because:\n', e);
         this.using[arguments[i]] = null;
       }
     }
     return this;
+  },
+
+  _add: function (component) {
+    this.components.push(component);
   }
 
 }

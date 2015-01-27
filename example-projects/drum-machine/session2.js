@@ -18,12 +18,13 @@ session
   'mixer'
 )
 
+.rack('Sequencing')
+.end()
 
-//.rack.Rack('Sequencing')
+//
 
   //.transport.Transport({ tempo: 140 
                        //, meter: [4, 4]})
 
   //.timeline.Timeline({ tracks: 16 })
 
-//.end()
