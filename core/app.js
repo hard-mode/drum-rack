@@ -237,7 +237,8 @@ Application.prototype = {
                 app.projectFile);
             }
 
-            reply(app.projectVM.HARDMODE.templatizer.app({}));
+            reply(app.projectVM.HARDMODE.templatizer.app(
+              app.projectVM.HARDMODE.session));
 
           });
 

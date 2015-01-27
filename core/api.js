@@ -4,7 +4,10 @@ module.exports = {
 
   console: console,
 
-  session: {},
+  session: {
+    metadata: {},
+    using:    [],
+  },
 
   Session: function () {
 
@@ -17,13 +20,18 @@ module.exports = {
 
   Metadata: function (data) {
     return function (session) {
-      session.metadata = data; // TODO extend
+      for (var i in data) {
+        session.metadata[i] = data[i];
+      }
     }
   },
 
-  Using: function (modules) {
+  Using: function () {
+    var args = arguments;
     return function (session) {
-      session.using = modules;
+      for (var i in args) {
+        session.using.push(args[i]);
+      }
     }
   },
 

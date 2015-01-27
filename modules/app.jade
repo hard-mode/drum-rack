@@ -14,8 +14,8 @@ html
       | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer
       | delete window.HARDMODE.templatizer
 
-    //-each u in using
-      //-script(src='modules/' + u)
+    each u in session.using
+      script(src='modules/' + u)
 
     script.
       window.HTMLToDOMNode = function (html) {
