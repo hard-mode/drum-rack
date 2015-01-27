@@ -2,9 +2,7 @@
 
 H.Timeline = function (options) {
 
-  this.el = HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(options)).firstChild;
-
-  return;
+  var el = this.el = HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(options)).firstChild;
 
   var actions = {
     cursor: Reflux.createActions([
@@ -22,7 +20,7 @@ H.Timeline = function (options) {
   var cursor = Reflux.createStore({
 
     init: function () {
-      this.cursor = document.getElementsByClassName('timeline-cursor')[0];
+      this.cursor = el.getElementsByClassName('timeline-cursor')[0];
       document.addEventListener('keydown', actions.cursor.keydown)
       this.listenToMany(actions.cursor);
     },
@@ -60,7 +58,7 @@ H.Timeline = function (options) {
   var track = Reflux.createStore({
 
     init: function () {
-      this.tracks = document.getElementsByClassName('timeline-track');
+      this.tracks = el.getElementsByClassName('timeline-track');
       for (var i = 0; i < this.tracks.length; i++) {
         var track = this.tracks[i];
         track.addEventListener('click', function (event) {

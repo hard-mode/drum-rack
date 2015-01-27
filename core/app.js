@@ -141,7 +141,7 @@ Application.prototype = {
 
     for (var i in app.serverRoutes) {
       var route = app.serverRoutes[i];
-      route.handler = route.handler.bind(app);
+      if (route.handler.bind) route.handler = route.handler.bind(app);
       console.log("Registering route", route.method || "GET", route.path);
       app.httpServer.route(route);
     }
@@ -307,6 +307,11 @@ Application.prototype = {
           reply.file(file).type('text/javascript');
 
         }
+      }
+
+    , { path:   '/libs/{path*}'
+      , method: 'GET'
+      , handler: { directory: { path: 'bower_components/' } }
       }
 
     ]

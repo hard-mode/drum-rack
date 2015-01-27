@@ -3,7 +3,6 @@
   var script   = document.createElement('script');
   script.src   = '/socket.io/socket.io.js';
   script.async = true;
-
   script.addEventListener('load', function () {
 
     H.OSC = io.connect(
