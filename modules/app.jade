@@ -27,5 +27,7 @@ html
 
     script
       each component in components
-        = 'new HARDMODE.' + component.client + '('
-        | !{JSON.stringify(component.options)});
+        != 'new HARDMODE.' + component.client + '(' + JSON.stringify(component.options)
+        each subcomponent in component.components
+          != ', new HARDMODE.' + subcomponent.client + '(' + JSON.stringify(subcomponent.options) + ')'
+        = ');\n'

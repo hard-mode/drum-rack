@@ -4,8 +4,7 @@ module.exports = function (Session) {
     this.session = session;
     this.client  = 'Transport';
 
-    this.tempo   = options.tempo;
-    this.meter   = options.meter;
+    this.options = options;
   }
 
   Session.prototype.transport = function (options) {
