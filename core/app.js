@@ -16,6 +16,10 @@ var child       = require('child_process')  // spawning stuff
 tmp.setGracefulCleanup();
 
 
+// https://github.com/tlrobinson/long-stack-traces
+require('long-stack-traces');
+
+
 var Application = function (projectFile) {
 
   if (projectFile) {
@@ -26,7 +30,9 @@ var Application = function (projectFile) {
     this.projectFile = null;
   }
 
-  this.projectVM   = vm.createContext(require('./api.js'));
+  this.projectVM = vm.createContext(require('./api-context.js'));
+  vm.runInContext(fs.readFileSync(path.resolve('core/api.js')), this.projectVM, '<project_api>');
+
   this.redisServer = null;
   this.redisClient = null;
   this.httpServer  = null;
@@ -232,13 +238,16 @@ Application.prototype = {
 
             if (app.projectFile) {
               vm.runInContext(
+                //'console.log(session, require("path"), require(path.resolve("core/api-context.js")));',
                 fs.readFileSync(app.projectFile),
                 app.projectVM,
                 app.projectFile);
             }
 
-            reply(app.projectVM.HARDMODE.templatizer.app(
-              app.projectVM.HARDMODE.session));
+            reply('foo');
+
+            //reply(app.projectVM.HARDMODE.templatizer.app(
+              //app.projectVM.HARDMODE.session));
 
           });
 
