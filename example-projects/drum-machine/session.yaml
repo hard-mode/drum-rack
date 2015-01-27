@@ -1,0 +1,21 @@
+name: Drum Machine Demo
+
+author: Mlad Konstruktor <fallenblood@gmail.com>
+
+version: 0.0.1
+
+uses:
+  - rack
+  - pads
+  - sample-editor
+  - timeline
+  - transport
+  - mixer
+
+workspace:
+  - rack:
+    - transport
+    - timeline
+  - rack:
+    - pads
+    - sample-editor

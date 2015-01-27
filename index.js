@@ -10,14 +10,16 @@ var child       = require('child_process')  // spawning stuff
   , templatizer = require('templatizer')    // glue templates
   , tmp         = require('tmp')            // get temp files
   , vm          = require('vm')             // eval templates
+  , yaml        = require('js-yaml')        // session loader
 
 
 // https://github.com/raszi/node-tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
 
-var Application = function () {
+var Application = function (projectFile) {
 
+  this.projectFile = projectFile;
   this.redisServer = null;
   this.redisClient = null;
   this.httpServer  = null;
@@ -189,7 +191,7 @@ Application.prototype = {
       styl.set('paths',    [srcdir]);
       styl.set('filename', 'style.css');
 
-      //styl.import('global');
+      styl.import('global');
 
       for (var i in directories) {
         var d = directories[i];
@@ -219,15 +221,19 @@ Application.prototype = {
 
             if (err) throw err;
 
-            reply(app.templates.app(
-              { css: []
-              , js:  [] }
-            ));
+            var projectData = {}
+
+            if (app.projectFile) {
+              projectData = yaml.safeLoad(fs.readFileSync(app.projectFile));
+            }
+
+            console.log(projectData);
+
+            reply(app.templates.app(projectData));
 
           });
 
-        }
-      }
+        } }
 
     , { path:    '/templates.js'
       , method:  'GET'
@@ -243,8 +249,7 @@ Application.prototype = {
 
           });
 
-        }
-      }
+        } }
 
     , { path:    '/styles.css'
       , method:  'GET'
@@ -260,7 +265,22 @@ Application.prototype = {
 
           })
 
-        }}
+        } }
+
+    , { path:    '/modules/{module}'
+      , method:  'GET'
+      , handler: function (request, reply) {
+
+          var app  = this
+            , file = path.join('.'
+                              , 'modules'
+                              , request.params.module
+                              , 'client.js');
+
+          reply.file(file).type('text/javascript');
+
+        }
+      }
 
     ]
 
@@ -272,7 +292,7 @@ module.exports = Application;
 
 if (require.main === module) {
 
-  var app = new Application();
+  var app = new Application(process.argv[2]);
 
 }
 

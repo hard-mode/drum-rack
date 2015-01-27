@@ -1,12 +1,20 @@
 doctype html
+
 html
+
   head
+
+    title= name
+
     link(rel='stylesheet',href='/styles.css')
+
     script window.HARDMODE = {};
     script(src='templates.js')
     script
       | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer
       | delete window.HARDMODE.templatizer
-    each script in js
-      script(src=script)
+
+    each u in uses
+      script(src='modules/' + u)
+
   body
