@@ -5,7 +5,7 @@ module.exports = function (Session) {
     this.components = [];
     this.client     = 'Rack';
 
-    this.name       = name;
+    this.options = { name: name };
   }
 
   Session.prototype.rack = function (name) {

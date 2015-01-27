@@ -43,8 +43,6 @@ Session.prototype = {
 
 module.exports = {
 
-  HARDMODE: {},
-
   session: new Session(),
 
 };

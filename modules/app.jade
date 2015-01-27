@@ -9,7 +9,7 @@ html
     link(rel='stylesheet',href='/styles.css')
   body
 
-    script window.HARDMODE = {};
+    script window.HARDMODE = window.session = {};
     script(src='templates.js')
     script
       | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer;
@@ -27,4 +27,5 @@ html
 
     script
       each component in components
-        = 'new HARDMODE.' + component.client + '();'
+        = 'new HARDMODE.' + component.client + '('
+        | !{JSON.stringify(component.options)});

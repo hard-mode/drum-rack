@@ -2,7 +2,8 @@
 
 H.Transport = function () {
 
-  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.transport.transport.Transport()));
+  var el = HTMLToDOMNode(H.TEMPLATES.transport.transport.Transport()).firstChild;
+  document.body.appendChild(el);
 
 }
 
