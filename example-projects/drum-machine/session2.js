@@ -15,6 +15,8 @@ session
      'transport',
      'mixer' )
 
+//.osc()
+
 .rack('Sequencing')
 
   .transport({ tempo: 140

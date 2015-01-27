@@ -170,7 +170,7 @@ Application.prototype = {
       templatizer(
         srcdir,
         temppath,
-        { namespace: 'HARDMODE'
+        { namespace:        'session'
         , dontRemoveMixins: true });
 
       fs.readFile(
@@ -232,14 +232,17 @@ Application.prototype = {
 
           var app = this;
 
-          app.redisClient.get('templates', function (err, data) {
+          app.redisClient.get('templates', function (err, templateData) {
 
             if (err) throw err;
 
             app.projectVM.session.components = [];
+            app.projectVM.session.httpServer = app.httpServer;
 
             vm.runInContext(
-              data,
+              templateData +
+              ';session.templates = session.templatizer' +
+              ';delete session.templatizer',
               app.projectVM,
               '<redis_templates>');
 
@@ -252,7 +255,7 @@ Application.prototype = {
 
             console.log(app.projectVM.session);
 
-            reply(app.projectVM.HARDMODE.templatizer.app(
+            reply(app.projectVM.session.templates.app(
               app.projectVM.session));
 
           });

@@ -63,7 +63,13 @@ module.exports = function (Session) {
       });
 
     });
+
   }
 
+  Session.prototype.osc = function (options) {
+
+    this._osc = new OSCInterface();
+
+  }
 
 }
