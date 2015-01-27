@@ -9,8 +9,7 @@ var child       = require('child_process')  // spawning stuff
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
   , tmp         = require('tmp')            // get temp files
-  , vm          = require('vm')             // eval templates
-  , yaml        = require('js-yaml')        // session loader
+  , vm          = require('vm');            // eval templates
 
 
 // https://github.com/raszi/node-tmp#graceful-cleanup
@@ -19,12 +18,19 @@ tmp.setGracefulCleanup();
 
 var Application = function (projectFile) {
 
-  this.projectFile = projectFile;
+  if (projectFile) {
+    var p = path.resolve(projectFile)
+    console.log('Opening session', p);
+    this.projectFile = p;
+  } else {
+    this.projectFile = null;
+  }
+
+  this.projectVM   = vm.createContext(require('./api.js'));
   this.redisServer = null;
   this.redisClient = null;
   this.httpServer  = null;
   this.templates   = null;
-  this.templateVM  = vm.createContext();
 
   var app = this;
 
@@ -194,16 +200,14 @@ Application.prototype = {
       styl.import('global');
 
       for (var i in directories) {
-        var d = directories[i];
-        styl.import(d + '/' + d);
-      }
+        var d = directories[i],
+            p = path.join('modules', d, d + '.styl');
+        if (fs.existsSync(p)) styl.import(d + '/' + d);
+      };
 
       styl.render(function (err, css) {
-
         if (err) throw err;
-
         app.redisClient.set('stylesheet', css);
-
       });
 
     });
@@ -221,15 +225,19 @@ Application.prototype = {
 
             if (err) throw err;
 
-            var projectData = {}
+            vm.runInContext(
+              data,
+              app.projectVM,
+              '<redis_templates>');
 
             if (app.projectFile) {
-              projectData = yaml.load(fs.readFileSync(app.projectFile));
+              vm.runInContext(
+                fs.readFileSync(app.projectFile),
+                app.projectVM,
+                app.projectFile);
             }
 
-            console.log(projectData);
-
-            reply(app.templates.app(projectData));
+            reply(app.projectVM.HARDMODE.templatizer.app({}));
 
           });
 

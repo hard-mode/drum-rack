@@ -12,10 +12,20 @@ using:
   - transport
   - mixer
 
-workspace:
-  - rack:
-    - Transport
-    - Timeline
-  - rack:
-    - PadGrid
-    - SampleEditor
+racks:
+
+  - name:  Sequencer
+    units:
+      - name: Transport
+        options:
+          tempo: 140
+      - name: Timeline
+        options:
+          tracks: 16
+
+  - name:  Sound Designer
+    units:
+      - name: Pads
+        options:
+          number: 16
+      - name: SampleEditor
