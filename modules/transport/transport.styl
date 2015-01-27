@@ -10,8 +10,13 @@
 .transport-info
   height 48px
   border-radius 3px
-  background rgba(255,255,255,0.075);
   margin-right 6px
+
+.transport-rewind,
+.transport-play,
+.transport-record
+  background rgba(255,255,255,0.1)
+  border-top 1px solid rgba(255,255,255,0.2)
 
 .transport-rewind
   width 24px
@@ -26,13 +31,13 @@
     position absolute
     pointer-events none
     border-color rgba(0,0,0,0);
-    border-right-color rgba(255,255,255,0.075);
+    border-right-color rgba(255,255,255,0.1);
     border-width 24px 12px 24px 12px
     margin-left -12px
   &:hover
-    background rgba(255,255,255,0.1)
+    background rgba(255,255,255,0.15)
     &:after
-      border-right-color rgba(255,255,255,0.1)
+      border-right-color rgba(255,255,255,0.15)
 
 .transport-play
   width 48px
@@ -47,18 +52,18 @@
     position absolute
     pointer-events none
     border-color rgba(0,0,0,0);
-    border-left-color rgba(255,255,255,0.075);
+    border-left-color rgba(255,255,255,0.1);
     border-width 24px 12px 24px 12px
   &:hover
-    background rgba(255,255,255,0.1)
+    background rgba(255,255,255,0.15)
     &:after
-      border-left-color rgba(255,255,255,0.1)
+      border-left-color rgba(255,255,255,0.15)
 
 .transport-record
   width 48px
   border-radius 100%
   &:hover
-    background rgba(255,255,255,0.1)
+    background rgba(255,255,255,0.15)
 
 .transport-info
   padding 0 24px
