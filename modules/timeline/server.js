@@ -1,8 +1,17 @@
-module.exports = {
+module.exports = function (Session) {
 
-  Timeline: function (name) {
+  var Timeline = function (session, options) {
+    this.session = session;
+    this.client  = 'Timeline';
+    this.options = options;
+  }
 
-    console.log("TIMELINE", name);
+  Session.prototype.timeline = function (options) {
+
+    var t = new Timeline(this, options);
+    this._add(t);
+
+    return this;
 
   }
 

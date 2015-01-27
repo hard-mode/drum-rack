@@ -1,8 +1,10 @@
 (function(H) {
 
-H.Timeline = function (n) {
+H.Timeline = function (options) {
 
-  document.body.appendChild(HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(n)));
+  this.el = HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(options)).firstChild;
+
+  document.body.appendChild(this.el);
 
   var actions = {
     cursor: Reflux.createActions([

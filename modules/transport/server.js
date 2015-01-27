@@ -3,7 +3,6 @@ module.exports = function (Session) {
   var Transport = function (session, options) {
     this.session = session;
     this.client  = 'Transport';
-
     this.options = options;
   }
 

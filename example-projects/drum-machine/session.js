@@ -22,6 +22,8 @@ session
   .transport({ tempo: 140
              , meter: [4, 4] })
 
+  .timeline({ tracks: 12 })
+
 .end()
 
 .rack('Sampling')

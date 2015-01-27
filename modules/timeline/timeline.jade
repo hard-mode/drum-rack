@@ -1,8 +1,8 @@
-mixin Timeline(trackCount)
+mixin Timeline(options)
   .timeline
     +TimelineRuler
     - var i = 0
-    while i < trackCount
+    while i < options.tracks
       - i++
       +TimelineTrack(i)
     +TimelineCursor
