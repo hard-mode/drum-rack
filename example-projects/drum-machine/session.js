@@ -14,48 +14,28 @@ Session(
         'sample-editor',
         'timeline',
         'transport',
-        'mixer')
+        'mixer'),
 
-  //function (session) {
+  function (session) {
 
-    //console.log("FOO1");
-    //return;
+    var u         = session.using,
+        Rack      = u.rack.Rack,
+        Transport = u.transport.Transport,
+        Timeline  = u.timeline.Timeline;
 
-    //var u = session.using;
+    Rack(
+      'Sequencing',
+      Transport({ tempo: 140, meter: [4,4] }),
+      Timeline({ tracks: 16 })
+    );
 
-    //return u.rack.Rack('Sequencing',
-
-      //u.transport.Transport({
-        //tempo: function (session) {
-          //return session.metadata.tempo },
-        //meter: [4, 4] }),
-
-      //u.timeline.Timeline({
-        //tracks: 16 })
-
+    //Rack(
+      //'Sampling',
+      //Pads({ grid: [4, 4] }),
+      //Editor(),
+      //Mixer({ tracks: 16 })
     //);
 
-  //},
-
-  //function (session) {
-
-    //console.log("FOO2");
-    //return;
-
-    //var u = session.using;
-
-    //return u.rack.Rack('Sampling',
-
-      //u.pads.Pads({
-        //grid: [4, 4] }),
-
-      //u['sample-editor'].SampleEditor(),
-
-      //u.mixer.Mixer({
-        //tracks: 16 })
-
-    //)
-
-  //}
+  }
 
 );

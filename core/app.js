@@ -20,8 +20,10 @@ tmp.setGracefulCleanup();
 require('long-stack-traces');
 
 
+// main application class
 var Application = function (projectFile) {
 
+  // if a project file has been specified, open it
   if (projectFile) {
     var p = path.resolve(projectFile)
     console.log('Opening session', p);
@@ -30,16 +32,25 @@ var Application = function (projectFile) {
     this.projectFile = null;
   }
 
-  this.projectVM = vm.createContext(require('./api-context.js'));
-  vm.runInContext(fs.readFileSync(path.resolve('core/api.js')), this.projectVM, '<project_api>');
+  // create sandboxed context for server-side execution of projects
+  this.projectVM = vm.createContext(require('./project-context.js'));
 
+  // define a few basic api functions for defininf projects
+  vm.runInContext(
+    fs.readFileSync(path.resolve('core/project-api.js')),
+    this.projectVM,
+    '<project_api>');
+
+  // global state
   this.redisServer = null;
   this.redisClient = null;
   this.httpServer  = null;
   this.templates   = null;
 
+  // use closures to avoid repeated .bind()-ing
   var app = this;
 
+  // launcg redis server on a free port
   freeport(function (err, port) {
 
     if (err) throw err;
@@ -59,7 +70,7 @@ Application.prototype = {
 
     var app = this;
 
-    // start redis
+    // start redis server process
     app.redisServer = child.spawn(
       'redis-server',
       [ '--port', port ],
