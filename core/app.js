@@ -236,6 +236,8 @@ Application.prototype = {
 
             if (err) throw err;
 
+            app.projectVM.session.components = [];
+
             vm.runInContext(
               data,
               app.projectVM,
