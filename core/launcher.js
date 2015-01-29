@@ -1,6 +1,8 @@
-var forever = require('forever-monitor') // runs eternally
-  , path = require('path')               // path operation
-  , vm   = require('vm');                // eval isolation
+var forever  = require('forever-monitor') // runs eternally
+  , freeport = require('freeport')        // get free ports
+  , path     = require('path')            // path operation
+  , redis    = require('redis')           // fast datastore
+  , vm       = require('vm');             // eval isolation
 
 
 // https://github.com/tlrobinson/long-stack-traces
@@ -19,17 +21,40 @@ var Session = module.exports = function (srcPath) {
     console.log('Starting new session.');
   }
 
-  // initialize components
-  this.datastore = new (require('./datastore.js'))(this);
-  this.watcher   = new (require('./watcher.js'  ))(this);
-  this.watcher.compileWisp(this.path);
-  this.watcher.add(this.path)
+  // get a free port for running a redis server
+  // TODO fixed port, pidfiles
+  freeport(function (err, port) {
 
-  // create sandbox for project code
-  this.context = vm.createContext(
-    { datastore: this.datastore
-    , watcher:   this.watcher });
+    console.log("Picked port", port);
 
+    this.redis =
+      { server: forever.start(
+          ['redis-server', '--port', port],
+          { pidFile: '/home/epimetheus/redis.pid' })
+      , client: redis.createClient(
+          port, '127.0.0.1', {}) };
+
+    this.watcher = new (forever.Monitor)
+      ( './watcher.js'
+      , { env: { REDIS: port } } );
+
+    // create sandbox for session code
+    this.context = vm.createContext(
+      { datastore: this.datastore
+      , watcher:   this.watcher } );
+
+    // keep track of what the watcher is doing
+    this.redis.client.subscribe('watcher');
+    this.redis.client.on('message', function (channel, message) {
+      console.log("HEYO", channel, message);
+    })
+
+    // compile and execute session code
+    //this.watcher.compileWisp(this.path);
+    //this.watcher.add(this.path);
+  
+  }.bind(this));
+  
 };
 
 

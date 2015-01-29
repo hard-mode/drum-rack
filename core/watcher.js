@@ -1,6 +1,7 @@
 var fs          = require('fs')             // filesystem ops
   , gaze        = require('gaze')           // watching files
   , jade        = require('jade')           // html templates
+  , redis       = require('redis')          // fast datastore
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
   , tmp         = require('tmp')            // get temp files
@@ -14,11 +15,16 @@ var endsWith = function (a, b) {
   return a.indexOf(b) === (a.length - b.length);
 }
 
-var Watcher = module.exports = function (app) {
+var Watcher = module.exports = function () {
 
   var self  = this;
 
-  this.app  = app;
+  this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+
+  this.data.on('subscribe', function (channel, count) {
+    console.log("FOO")
+    this.data.publish('watcher', 'ready');
+  }.bind(this))
 
   this.gaze = gaze('core/**/*', function (err, watcher) {
 
@@ -135,6 +141,7 @@ Watcher.prototype = {
 
       if (err) throw err;
 
+      console.log(this.app.datastore);
       this.app.datastore.client.set('session', wisp.compile(data).code);
 
     }.bind(this));
