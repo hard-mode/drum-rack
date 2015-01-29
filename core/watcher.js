@@ -9,30 +9,40 @@ var fs          = require('fs')             // filesystem ops
 // https://github.com/raszi/node-tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
+var endsWith = function (a, b) {
+  return a.indexOf(b) === (a.length - b.length);
+}
 
 var Watcher = module.exports = function (app) {
 
-  this.watcher = gaze('modules/**/*', function (err, watcher) {
+  var self = this;
+
+  var watchGlobs =
+    [ 'core/**/*'
+    , 'modules/**/*'
+    , 'example-projects/**/*' ];
+
+  this.gaze = gaze(watchGlobs, function (err, watcher) {
 
     if (err) throw err;
 
-    var endsWith = function (a, b) {
-      return a.indexOf(b) === (a.length - b.length);
-    }
-
-    this.on('all', function (event, filepath) {
+    watcher.on('all', function (event, filepath) {
 
       console.log(filepath, event);
 
       if (endsWith(filepath, '.jade')) {
 
-        this.compileTemplates(path.dirname(filepath));
+        self.compileTemplates(path.dirname(filepath));
 
       } else if (endsWith(filepath, '.styl')) {
 
-        this.compileStylesheets(path.dirname(filepath));
+        self.compileStylesheets(path.dirname(filepath));
 
-      }
+      } else if (endsWith(filepath, '.wisp')) {
+
+        self.compileWisp(path.dirname(filepath));
+
+      } 
 
     });
 
@@ -73,8 +83,6 @@ Watcher.prototype = {
           app.datastore.set('templates', data);
         });
 
-      app.templates = require(temppath);
-
     });
 
   },
@@ -114,6 +122,12 @@ Watcher.prototype = {
       });
 
     });
+
+  },
+
+  compileWisp: function (srcdir) {
+
+    console
 
   }
 

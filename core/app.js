@@ -26,13 +26,12 @@ var Application = module.exports = function (projectFile) {
   this.projectVM = vm.createContext(require('./project-context.js'));
 
   // global state
-  this.httpServer  = null;
   this.templates   = null;
 
   // initialize components
-  this.datastore   = new (require('./datastore.js'))(this);
-  this.httpServer  = new (require('./server.js'))(this);
-  this.fileMonitor = new (require('./watcher.js'))(this);
+  this.datastore  = new (require('./datastore.js'))(this);
+  this.httpServer = new (require('./server.js'))(this);
+  this.watcher    = new (require('./watcher.js'))(this);
 
 };
 

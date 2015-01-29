@@ -1,6 +1,3 @@
-(defmacro session [& args]
-  `(let [foo ~args]))
-
 (session
 
   :use [rack osc pads sample-editor timeline transport mixer]
