@@ -9,9 +9,8 @@
       :key     key
       :tempo   tempo })
 
-(let [transport (transport
-                  :tempo tempo
-                  :key   key)
+(let [transport (transport :tempo tempo
+                           :key   key)
       timeline  (timeline)
       sampler   (sampler)]
 

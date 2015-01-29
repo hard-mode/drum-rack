@@ -4,6 +4,7 @@ var fs          = require('fs')             // filesystem ops
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
   , tmp         = require('tmp')            // get temp files
+  , wisp        = require('wisp/compiler'); // lispy language
 
 
 // https://github.com/raszi/node-tmp#graceful-cleanup
@@ -15,14 +16,11 @@ var endsWith = function (a, b) {
 
 var Watcher = module.exports = function (app) {
 
-  var self = this;
+  var self  = this;
 
-  var watchGlobs =
-    [ 'core/**/*'
-    , 'modules/**/*'
-    , 'example-projects/**/*' ];
+  this.app  = app;
 
-  this.gaze = gaze(watchGlobs, function (err, watcher) {
+  this.gaze = gaze('core/**/*', function (err, watcher) {
 
     if (err) throw err;
 
@@ -40,7 +38,7 @@ var Watcher = module.exports = function (app) {
 
       } else if (endsWith(filepath, '.wisp')) {
 
-        self.compileWisp(path.dirname(filepath));
+        self.compileWisp(filepath);
 
       } 
 
@@ -53,6 +51,10 @@ var Watcher = module.exports = function (app) {
 Watcher.prototype = {
 
   constructor: Watcher,
+
+  add: function () {
+    this.gaze.add.apply(this.gaze, arguments);
+  },
 
   compileTemplates: function (srcdir) {
 
@@ -125,9 +127,17 @@ Watcher.prototype = {
 
   },
 
-  compileWisp: function (srcdir) {
+  compileWisp: function (src) {
 
-    console
+    console.log('Compiling Wisp:', src);
+
+    fs.readFile(src, { encoding: 'utf8' }, function (err, data) {
+
+      if (err) throw err;
+
+      this.app.datastore.client.set('session', wisp.compile(data).code);
+
+    }.bind(this));
 
   }
 
