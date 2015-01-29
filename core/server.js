@@ -1,7 +1,6 @@
-var fs          = require('fs')             // filesystem ops
-  , hapi        = require('hapi')           // http framework
-  , vm          = require('vm');            // eval templates
-
+var fs   = require('fs')   // filesystem ops
+  , hapi = require('hapi') // http framework
+  , vm   = require('vm');  // eval templates
 
 var Server = module.exports = function (app) {
 
@@ -35,31 +34,32 @@ Server.prototype = {
       , handler: function (request, reply) {
 
           var app = this.app;
+          reply("Hello world!");
 
-          app.datastore.get('templates', function (err, templateData) {
+          //app.datastore.get('templates', function (err, templateData) {
 
-            if (err) throw err;
+            //if (err) throw err;
 
-            vm.runInContext(
-              templateData +
-              ';session.templates = session.templatizer' +
-              ';delete session.templatizer',
-              app.projectVM,
-              '<redis_templates>');
+            //vm.runInContext(
+              //templateData +
+              //';session.templates = session.templatizer' +
+              //';delete session.templatizer',
+              //app.projectVM,
+              //'<redis_templates>');
 
-            if (app.projectFile) {
-              vm.runInContext(
-                fs.readFileSync(app.projectFile),
-                app.projectVM,
-                app.projectFile);
-            }
+            //if (app.projectFile) {
+              //vm.runInContext(
+                //fs.readFileSync(app.projectFile),
+                //app.projectVM,
+                //app.projectFile);
+            //}
 
-            reply("Hello world!");
+            //reply("Hello world!");
 
-            //reply(app.projectVM.session.templates.app(
-              //app.projectVM.session));
+            ////reply(app.projectVM.session.templates.app(
+              ////app.projectVM.session));
 
-          });
+          //});
 
         } }
 

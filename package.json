@@ -10,6 +10,7 @@
   "license": "ISC",
   "devDependencies": {},
   "dependencies": {
+    "forever-monitor": "^1.5.2",
     "freeport": "^1.0.4",
     "gaze": "^0.5.1",
     "hapi": "^8.1.0",

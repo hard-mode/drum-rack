@@ -1,7 +1,7 @@
-var child       = require('child_process')  // spawning stuff
-  , freeport    = require('freeport')       // get free ports
-  , path        = require('path')           // path operation
-  , redis       = require('redis')          // fast datastore
+var forever     = require('forever-monitor') // runs eternally
+  , freeport    = require('freeport')        // get free ports
+  , path        = require('path')            // path operation
+  , redis       = require('redis')           // fast datastore
 
 var Datastore = module.exports = function (app) {
 
@@ -10,24 +10,14 @@ var Datastore = module.exports = function (app) {
 
     if (err) throw err;
 
-    // start redis server process
-    this.redisServer = child.spawn(
-      'redis-server',
-      [ '--port', port ],
-      { stdio: [ 'ignore'
-               , 'pipe'
-               , 'pipe' ] } );
+    this.server = forever.start(
+      ['redis-server', '--port', port],
+      { pidFile: '/home/epimetheus/redis.pid' });
 
     // connect to redis
-    this.redisServer.stdout.on('data', function () {
-
-      if (this.redisClient) return;
-
-      this.redisClient = redis.createClient(
-        port,
-        '127.0.0.1',
-        {});
-
+    this.server.on('start', function () {
+      this.client = redis.createClient(
+        port, '127.0.0.1', {});
     }.bind(this));
 
   }.bind(this));
@@ -39,11 +29,11 @@ Datastore.prototype = {
   constructor: Datastore,
 
   get: function () {
-    this.redisClient.get.apply(this.redisClient, arguments);
+    this.client.get.apply(this.redisClient, arguments);
   },
 
   set: function () {
-    this.redisClient.set.apply(this.redisClient, arguments);
+    this.client.set.apply(this.redisClient, arguments);
   }
 
 };
