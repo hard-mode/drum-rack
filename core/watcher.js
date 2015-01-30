@@ -21,6 +21,7 @@ var endsWith = function (a, b) {
 var Watcher = module.exports = function () {
 
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  this.compileWisp(process.env.SESSION);
   this.gaze = gaze(
     ['core/**/*', process.env.SESSION],
     this.initWatcher.bind(this));
