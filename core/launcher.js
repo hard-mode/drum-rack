@@ -8,8 +8,8 @@ var forever  = require('forever-monitor') // runs eternally
 require('long-stack-traces');
 
 
-var TASKS = { watcher: './core/watcher.js'
-            , session: './core/session.js' };
+var TASKS = { watcher: path.resolve('./core/watcher.js')
+            , session: path.resolve('./core/session.js') };
 
 
 // main application class
@@ -28,36 +28,47 @@ var Application = module.exports = function (srcPath) {
   // TODO fixed port, pidfiles
   freeport(function (err, port) {
 
-    console.log("Picked port", port);
+    console.log("Starting Redis on port", port);
 
     // start redis
-    this.redis =
-      { server: forever.start(
-          ['redis-server', '--port', port],
-          { pidFile: '/home/epimetheus/redis.pid' })
-      , msg:    redis.createClient(port, '127.0.0.1', {}) };
-    var msg = this.redis.msg;
+    this.redis = forever.start(
+      ['redis-server', '--port', port],
+      { silent:  true
+      , pidFile: '/home/epimetheus/redis.pid' });
+
+    var bus = this.bus = redis.createClient(port, '127.0.0.1', {});
 
     // start child processes
     var tasks = this.tasks = {};
     for (var i in TASKS) {
+
       tasks[i] = new (forever.Monitor)
         ( TASKS[i]
         , { env: { REDIS:   port,
                    SESSION: this.path } } );
       tasks[i].start();
-      msg.subscribe(i);
+
+      bus.subscribe(i);
+
     }
 
     // restart child process on code update
-    msg.on('message', function (channel, message) {
+    bus.on('message', function (channel, message) {
+
       console.log("==>", channel, '::', message);
+
       var msg = message.split(' ');
+
       if (channel === 'watcher' && msg.length === 2) {
+        console.log(msg[1]);
         for (var i in TASKS) {
-          tasks[i].restart();
+          if (TASKS[i] === msg[1]) {
+            console.log('    Restarting', i, '\n');
+            tasks[i].restart();
+          }
         }
       }
+
     });
  
   }.bind(this));

@@ -11,30 +11,38 @@ var fs          = require('fs')             // filesystem ops
 // https://github.com/raszi/node-tmp#graceful-cleanup
 tmp.setGracefulCleanup();
 
+
 var endsWith = function (a, b) {
   return a.indexOf(b) === (a.length - b.length);
 }
 
+
 var Watcher = module.exports = function () {
 
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
-  var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
-  bus.subscribe('session');
+  this.gaze = gaze(
+    ['core/**/*', process.env.SESSION],
+    this.initWatcher.bind(this));
 
-  var self = this;
+};
 
-  this.gaze = gaze('core/**/*', function (err, watcher) {
+
+Watcher.prototype = {
+
+  constructor: Watcher,
+
+  add: function () {
+    this.gaze.add.apply(this.gaze, arguments);
+  },
+
+  initWatcher: function (err, watcher) {
 
     if (err) throw err;
 
+    var self = this
+      , data = this.data;
+
     data.publish('watcher', 'ready');
-    bus.on('message', function (channel, message) {
-      if (channel === 'session' && message.indexOf('open ') === 0 ) {
-        var msg = message.split(' ')[1];
-        watcher.add(msg);
-        data.publish('watcher', 'added ' + msg)
-      }
-    });
 
     watcher.on('all', function (event, filepath) {
 
@@ -56,16 +64,6 @@ var Watcher = module.exports = function () {
 
     });
 
-  });
-
-};
-
-Watcher.prototype = {
-
-  constructor: Watcher,
-
-  add: function () {
-    this.gaze.add.apply(this.gaze, arguments);
   },
 
   compileTemplates: function (srcdir) {
@@ -149,19 +147,19 @@ Watcher.prototype = {
 
     var data = this.data;
 
-    fs.readFile(src, { encoding: 'utf8' }, function (err, data) {
+    fs.readFile(src, { encoding: 'utf8' }, function (err, source) {
 
       if (err) throw err;
 
-      console.log(this.app.datastore);
-      data.set('session', wisp.compile(data).code);
-      data.publish('watcher', 'session')
+      data.set('session', wisp.compile(source).code);
+      data.publish('watcher', 'session');
  
     });
 
   }
 
 };
+
 
 if (require.main === module) {
   var app = new Watcher();
