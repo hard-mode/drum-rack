@@ -2,15 +2,18 @@ var forever  = require('forever-monitor') // runs eternally
   , freeport = require('freeport')        // get free ports
   , path     = require('path')            // path operation
   , redis    = require('redis')           // fast datastore
-  , vm       = require('vm');             // eval isolation
 
 
 // https://github.com/tlrobinson/long-stack-traces
 require('long-stack-traces');
 
 
+var TASKS = { watcher: './core/watcher.js'
+            , session: './core/session.js' };
+
+
 // main application class
-var Session = module.exports = function (srcPath) {
+var Application = module.exports = function (srcPath) {
 
   // if a project file has been specified, open it
   if (srcPath) {
@@ -27,32 +30,48 @@ var Session = module.exports = function (srcPath) {
 
     console.log("Picked port", port);
 
+    // start redis
     this.redis =
       { server: forever.start(
           ['redis-server', '--port', port],
           { pidFile: '/home/epimetheus/redis.pid' })
-      , client: redis.createClient(
-          port, '127.0.0.1', {}) };
+      , data:   redis.createClient(port, '127.0.0.1', {})
+      , msg:    redis.createClient(port, '127.0.0.1', {}) };
 
-    this.watcher = new (forever.Monitor)
-      ( './watcher.js'
-      , { env: { REDIS: port } } );
-
-    // create sandbox for session code
-    this.context = vm.createContext(
-      { datastore: this.datastore
-      , watcher:   this.watcher } );
+    // start child processes
+    var tasks = this.tasks = {};
+    for (var i in TASKS) {
+      tasks[i] = new (forever.Monitor)
+        ( TASKS[i]
+        , { env: { REDIS: port } } );
+      tasks[i].start();
+    }
 
     // keep track of what the watcher is doing
-    this.redis.client.subscribe('watcher');
-    this.redis.client.on('message', function (channel, message) {
-      console.log("HEYO", channel, message);
-    })
+    this.redis.msg.subscribe('watcher');
 
-    // compile and execute session code
-    //this.watcher.compileWisp(this.path);
-    //this.watcher.add(this.path);
-  
+    // restart child process on code update
+    this.redis.msg.on('message', function (channel, message) {
+
+      if (channel === 'watcher') {
+        var msg = message.split(" ");
+        if (msg.length === 1) {
+
+          // TODO
+ 
+        } else if (msg.length === 2) {
+
+          for (var i in TASKS) {
+            if (msg[1] === path.resolve(TASKS[i])) {
+              tasks[i].restart();
+            }
+          }
+
+        }
+      }
+
+    });
+ 
   }.bind(this));
   
 };
@@ -60,5 +79,5 @@ var Session = module.exports = function (srcPath) {
 
 // entry point
 if (require.main === module) {
-  var app = new Session(process.argv[2]);
+  var app = new Application(process.argv[2]);
 }

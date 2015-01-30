@@ -17,14 +17,11 @@ var endsWith = function (a, b) {
 
 var Watcher = module.exports = function () {
 
-  var self  = this;
-
   this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  this.bus.publish('watcher', 'ready');
 
-  this.data.on('subscribe', function (channel, count) {
-    console.log("FOO")
-    this.data.publish('watcher', 'ready');
-  }.bind(this))
+  var self  = this;
 
   this.gaze = gaze('core/**/*', function (err, watcher) {
 
@@ -32,7 +29,8 @@ var Watcher = module.exports = function () {
 
     watcher.on('all', function (event, filepath) {
 
-      console.log(filepath, event);
+      console.log(event, filepath);
+      self.bus.publish('watcher', event + ' ' + filepath); 
 
       if (endsWith(filepath, '.jade')) {
 
@@ -71,7 +69,8 @@ Watcher.prototype = {
 
     console.log("Compiling templates.");
 
-    var app = this;
+    var data = this.data
+      , bus  = this.bus;
 
     tmp.file(function (err, temppath) {
 
@@ -88,7 +87,8 @@ Watcher.prototype = {
         { encoding: 'utf8' },
         function (err, data) {
           if (err) throw err;
-          app.datastore.set('templates', data);
+          data.set('templates', data);
+          bus.publish('watcher', 'templates');
         });
 
     });
@@ -98,6 +98,9 @@ Watcher.prototype = {
   compileStylesheets: function (srcdir) {
 
     console.log("Compiling stylesheets.");
+
+    var data = this.data
+      , bus  = this.bus;
 
     fs.readdir(srcdir, function (err, files) {
 
@@ -126,7 +129,8 @@ Watcher.prototype = {
 
       styl.render(function (err, css) {
         if (err) throw err;
-        app.datastore.set('stylesheet', css);
+        data.set('stylesheet', css);
+        bus.publish('watcher', 'stylesheet');
       });
 
     });
@@ -137,15 +141,23 @@ Watcher.prototype = {
 
     console.log('Compiling Wisp:', src);
 
+    var data = this.data
+      , bus  = this.bus;
+
     fs.readFile(src, { encoding: 'utf8' }, function (err, data) {
 
       if (err) throw err;
 
       console.log(this.app.datastore);
-      this.app.datastore.client.set('session', wisp.compile(data).code);
-
-    }.bind(this));
+      data.set('session', wisp.compile(data).code);
+      bus.publish('watcher', 'session')
+ 
+    });
 
   }
 
 };
+
+if (require.main === module) {
+  var app = new Watcher();
+}
