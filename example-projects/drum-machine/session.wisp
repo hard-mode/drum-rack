@@ -1,1 +1,5 @@
-(console.log "Hello World!")
+(session
+  :use  ["rack"]
+  :info { :name "Sampling Machine" })
+
+(rack "Sequencing")

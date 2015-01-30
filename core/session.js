@@ -1,12 +1,15 @@
-var redis = require('redis') // fast datastore
+var fs    = require('fs')    // filesystem ops
+  , path  = require('path')  // path operation
+  , redis = require('redis') // fast datastore
   , vm    = require('vm');   // eval isolation
 
-var Session = function () {
+
+var SessionLauncher = function () {
   
   this.data    = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.bus     = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.path    = process.env.SESSION;
-  this.context = this.getSandboxContext();
+  this.context = new SessionContext(this);
   this.sandbox = vm.createContext(this.context);
 
   var data = this.data
@@ -24,33 +27,35 @@ var Session = function () {
     }
   });
 
+  vm.runInContext(
+    fs.readFileSync(path.join(__dirname, 'context.js'), {encoding: 'utf8'}),
+    this.sandbox,
+    '<session_context>');
+
   // evaluate session code
-  this.execute();
+  var code = this.data.get('session', function (err, code) {
+    this.data.publish('session', 'ready');
+    vm.runInContext(code, this.sandbox, '<session>');
+  }.bind(this));
 
 }
 
 
-Session.prototype = {
+var SessionContext = function (launcher) {
 
-  constructor: Session,
+  this.console = console;
 
-  getSandboxContext: function () {
-    return { console: console
-           , DATA:    this.data
-           , BUS:     this.bus
-           , PATH:    this.path };
-  },
+  this.require = require;
 
-  execute: function () {
-    var code = this.data.get('session', function (err, code) {
-      this.data.publish('session', 'ready');
-      vm.runInContext(code, this.sandbox, '<session>');
-    }.bind(this));
-  }
+  this.DATA    = launcher.data;
+
+  this.BUS     = launcher.bus;
+
+  this.PATH    = launcher.path;
 
 }
 
 
 if (require.main === module) {
-  var app = new Session();
+  var app = new SessionLauncher();
 }

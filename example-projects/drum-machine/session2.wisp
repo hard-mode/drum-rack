@@ -1,5 +1,3 @@
-
-
 (session
 
   :use [rack osc pads sample-editor timeline transport mixer]

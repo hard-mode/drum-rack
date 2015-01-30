@@ -54,6 +54,10 @@ Watcher.prototype = {
       return;
     };
 
+    if (filepath === path.join(__dirname, 'context.js')) {
+      this.data.publish('session', 'reload');
+    }
+
     this.data.publish('watcher', event + ' ' + filepath); 
 
     if (endsWith(filepath, '.jade')) {
