@@ -15,12 +15,12 @@ var TASKS = { watcher: './core/watcher.js'
 // main application class
 var Application = module.exports = function (srcPath) {
 
-  // if a project file has been specified, open it
+  // determine session path
   if (srcPath) {
     this.path = path.resolve(srcPath);
     console.log('Opening session', this.path);
   } else {
-    this.path = null;
+    this.path = '';
     console.log('Starting new session.');
   }
 
@@ -35,41 +35,29 @@ var Application = module.exports = function (srcPath) {
       { server: forever.start(
           ['redis-server', '--port', port],
           { pidFile: '/home/epimetheus/redis.pid' })
-      , data:   redis.createClient(port, '127.0.0.1', {})
       , msg:    redis.createClient(port, '127.0.0.1', {}) };
+    var msg = this.redis.msg;
 
     // start child processes
     var tasks = this.tasks = {};
     for (var i in TASKS) {
       tasks[i] = new (forever.Monitor)
         ( TASKS[i]
-        , { env: { REDIS: port } } );
+        , { env: { REDIS:   port,
+                   SESSION: this.path } } );
       tasks[i].start();
+      msg.subscribe(i);
     }
 
-    // keep track of what the watcher is doing
-    this.redis.msg.subscribe('watcher');
-
     // restart child process on code update
-    this.redis.msg.on('message', function (channel, message) {
-
-      if (channel === 'watcher') {
-        var msg = message.split(" ");
-        if (msg.length === 1) {
-
-          // TODO
- 
-        } else if (msg.length === 2) {
-
-          for (var i in TASKS) {
-            if (msg[1] === path.resolve(TASKS[i])) {
-              tasks[i].restart();
-            }
-          }
-
+    msg.on('message', function (channel, message) {
+      console.log("==>", channel, '::', message);
+      var msg = message.split(' ');
+      if (channel === 'watcher' && msg.length === 2) {
+        for (var i in TASKS) {
+          tasks[i].restart();
         }
       }
-
     });
  
   }.bind(this));

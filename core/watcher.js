@@ -17,20 +17,28 @@ var endsWith = function (a, b) {
 
 var Watcher = module.exports = function () {
 
-  this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
-  this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
-  this.bus.publish('watcher', 'ready');
+  var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  bus.subscribe('session');
 
-  var self  = this;
+  var self = this;
 
   this.gaze = gaze('core/**/*', function (err, watcher) {
 
     if (err) throw err;
 
+    data.publish('watcher', 'ready');
+    bus.on('message', function (channel, message) {
+      if (channel === 'session' && message.indexOf('open ') === 0 ) {
+        var msg = message.split(' ')[1];
+        watcher.add(msg);
+        data.publish('watcher', 'added ' + msg)
+      }
+    });
+
     watcher.on('all', function (event, filepath) {
 
-      console.log(event, filepath);
-      self.bus.publish('watcher', event + ' ' + filepath); 
+      data.publish('watcher', event + ' ' + filepath); 
 
       if (endsWith(filepath, '.jade')) {
 
@@ -69,8 +77,7 @@ Watcher.prototype = {
 
     console.log("Compiling templates.");
 
-    var data = this.data
-      , bus  = this.bus;
+    var data = this.data;
 
     tmp.file(function (err, temppath) {
 
@@ -88,7 +95,7 @@ Watcher.prototype = {
         function (err, data) {
           if (err) throw err;
           data.set('templates', data);
-          bus.publish('watcher', 'templates');
+          data.publish('watcher', 'templates');
         });
 
     });
@@ -99,8 +106,7 @@ Watcher.prototype = {
 
     console.log("Compiling stylesheets.");
 
-    var data = this.data
-      , bus  = this.bus;
+    var data = this.data;
 
     fs.readdir(srcdir, function (err, files) {
 
@@ -130,7 +136,7 @@ Watcher.prototype = {
       styl.render(function (err, css) {
         if (err) throw err;
         data.set('stylesheet', css);
-        bus.publish('watcher', 'stylesheet');
+        data.publish('watcher', 'stylesheet');
       });
 
     });
@@ -141,8 +147,7 @@ Watcher.prototype = {
 
     console.log('Compiling Wisp:', src);
 
-    var data = this.data
-      , bus  = this.bus;
+    var data = this.data;
 
     fs.readFile(src, { encoding: 'utf8' }, function (err, data) {
 
@@ -150,7 +155,7 @@ Watcher.prototype = {
 
       console.log(this.app.datastore);
       data.set('session', wisp.compile(data).code);
-      bus.publish('watcher', 'session')
+      data.publish('watcher', 'session')
  
     });
 
