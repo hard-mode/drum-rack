@@ -52,21 +52,32 @@ var Application = module.exports = function (srcPath) {
 
     }
 
-    // restart child process on code update
+    // core events
+    bus.subscribe('core');
+
+    // reload child process on code update
     bus.on('message', function (channel, message) {
 
       console.log("==>", channel, '::', message);
 
-      var msg = message.split(' ');
+      if (channel === 'core' && message === 'reload') {
 
-      if (channel === 'watcher' && msg.length === 2) {
-        console.log(msg[1]);
         for (var i in TASKS) {
-          if (TASKS[i] === msg[1]) {
-            console.log('    Restarting', i, '\n');
+          console.log('    Reloading', i + '.');
+          tasks[i].restart();
+        }
+        console.log();
+
+      } else {
+
+        for (var i in TASKS) {
+          if (channel === i && message === 'reload') {
+            console.log('    Reloading', i + '.\n');
             tasks[i].restart();
+            return;
           }
         }
+
       }
 
     });

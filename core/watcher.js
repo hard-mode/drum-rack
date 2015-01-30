@@ -1,6 +1,7 @@
 var fs          = require('fs')             // filesystem ops
   , gaze        = require('gaze')           // watching files
   , jade        = require('jade')           // html templates
+  , path        = require('path')           // path operation
   , redis       = require('redis')          // fast datastore
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
@@ -39,30 +40,28 @@ Watcher.prototype = {
 
     if (err) throw err;
 
-    var self = this
-      , data = this.data;
+    this.data.publish('watcher', 'ready');
 
-    data.publish('watcher', 'ready');
+    watcher.on('all', this.onWatcherEvent.bind(this));
 
-    watcher.on('all', function (event, filepath) {
+  },
 
-      data.publish('watcher', event + ' ' + filepath); 
+  onWatcherEvent: function (event, filepath) {
 
-      if (endsWith(filepath, '.jade')) {
+    if (path.dirname(filepath) === __dirname) {
+      this.data.publish('core', 'reload');
+      return;
+    };
 
-        self.compileTemplates(path.dirname(filepath));
+    this.data.publish('watcher', event + ' ' + filepath); 
 
-      } else if (endsWith(filepath, '.styl')) {
-
-        self.compileStylesheets(path.dirname(filepath));
-
-      } else if (endsWith(filepath, '.wisp')) {
-
-        self.compileWisp(filepath);
-
-      } 
-
-    });
+    if (endsWith(filepath, '.jade')) {
+      this.compileTemplates(path.dirname(filepath));
+    } else if (endsWith(filepath, '.styl')) {
+      this.compileStylesheets(path.dirname(filepath));
+    } else if (endsWith(filepath, '.wisp')) {
+      this.compileWisp(filepath);
+    }
 
   },
 

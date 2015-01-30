@@ -1,16 +1,32 @@
-var redis = require('redis')  // fast datastore
-  , vm       = require('vm'); // eval isolation
+var redis = require('redis') // fast datastore
+  , vm    = require('vm');   // eval isolation
 
 var Session = function () {
   
-  this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  var data  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  var bus   = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.path = process.env.SESSION;
-  if (this.path) this.data.publish('session', 'open ' + this.path);
-  this.data.publish('session', 'ready');
 
-  this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
-  this.bus.subscribe('watcher');
-  this.bus.on('message', function () {})
+  this.context =
+    { DATA: data
+    , BUS:  bus
+    , PATH: this.path };
+
+  this.sandbox = vm.createContext(this.context);
+
+  if (this.path) data.publish('session', 'open ' + this.path);
+
+  bus.subscribe('watcher');
+  bus.on('message', function (channel, message) {
+    if (channel === 'watcher') {
+      if (message === 'session') {
+        console.log('Session updated.');
+        data.publish('session', 'reload');
+      }
+    }
+  });
+
+  data.publish('session', 'ready');
 
   // create sandbox for session code
   //this.context = vm.createContext(
