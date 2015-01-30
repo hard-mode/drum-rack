@@ -9,7 +9,8 @@ var SessionLauncher = function () {
   this.data    = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.bus     = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.path    = process.env.SESSION;
-  this.context = new SessionContext(this);
+  this.context = { console: console
+                 , require: require };
   this.sandbox = vm.createContext(this.context);
 
   var data = this.data
@@ -27,31 +28,16 @@ var SessionLauncher = function () {
     }
   });
 
-  vm.runInContext(
-    fs.readFileSync(path.join(__dirname, 'context.js'), {encoding: 'utf8'}),
-    this.sandbox,
-    '<session_context>');
+  // evaluate session context code
+  var code = fs.readFileSync(
+    path.join(__dirname, 'context.js'), { encoding: 'utf8' });
+  vm.runInContext(code, this.sandbox,'<session-context>');
 
   // evaluate session code
   var code = this.data.get('session', function (err, code) {
     this.data.publish('session', 'ready');
     vm.runInContext(code, this.sandbox, '<session>');
   }.bind(this));
-
-}
-
-
-var SessionContext = function (launcher) {
-
-  this.console = console;
-
-  this.require = require;
-
-  this.DATA    = launcher.data;
-
-  this.BUS     = launcher.bus;
-
-  this.PATH    = launcher.path;
 
 }
 

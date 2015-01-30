@@ -2,9 +2,9 @@ var fs   = require('fs')   // filesystem ops
   , hapi = require('hapi') // http framework
   , vm   = require('vm');  // eval templates
 
-var Server = module.exports = function (app) {
+module.exports = {}
 
-  this.app = app;
+var Server = module.exports['Server'] = function (app) {
 
   this.server = new hapi.Server();
   this.server.connection({ port: 4000 });
@@ -33,33 +33,7 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          var app = this.app;
           reply("Hello world!");
-
-          //app.datastore.get('templates', function (err, templateData) {
-
-            //if (err) throw err;
-
-            //vm.runInContext(
-              //templateData +
-              //';session.templates = session.templatizer' +
-              //';delete session.templatizer',
-              //app.projectVM,
-              //'<redis_templates>');
-
-            //if (app.projectFile) {
-              //vm.runInContext(
-                //fs.readFileSync(app.projectFile),
-                //app.projectVM,
-                //app.projectFile);
-            //}
-
-            //reply("Hello world!");
-
-            ////reply(app.projectVM.session.templates.app(
-              ////app.projectVM.session));
-
-          //});
 
         } }
 
