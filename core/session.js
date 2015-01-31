@@ -9,14 +9,15 @@ var SessionLauncher = function () {
   this.data    = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.bus     = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.path    = process.env.SESSION;
-  this.context = { console: console
+  this.context = { process: process
+                 , console: console
                  , require: require };
   this.sandbox = vm.createContext(this.context);
 
   var data = this.data
     , bus  = this.bus;
 
-  if (this.path) data.publish('session', 'open ' + this.path);
+  if (this.path) data.publish('session-open', this.path);
 
   // when watcher tells us that the session code
   // has been updated: tell main process to restart us

@@ -21,10 +21,18 @@ var endsWith = function (a, b) {
 var Watcher = module.exports = function () {
 
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+  var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
+
   this.compileWisp(process.env.SESSION);
   this.gaze = gaze(
-    ['core/**/*', process.env.SESSION],
+    [ 'core/**/*' ],
     this.initWatcher.bind(this));
+
+  this.bus.subscribe('using');
+  this.bus.subscribe('session-open');
+  this.bus.on('message', function (channel, message) {
+    this.gaze.add([message]);
+  }.bind(this));
 
 };
 
@@ -33,22 +41,21 @@ Watcher.prototype = {
 
   constructor: Watcher,
 
-  add: function () {
-    this.gaze.add.apply(this.gaze, arguments);
-  },
-
   initWatcher: function (err, watcher) {
 
     if (err) throw err;
-
     this.data.publish('watcher', 'ready');
-
     watcher.on('all', this.onWatcherEvent.bind(this));
 
   },
 
   onWatcherEvent: function (event, filepath) {
 
+    console.log(event, filepath);
+    console.log(path.relative(__dirname, filepath));
+
+    // editing any file in the core directory
+    // triggers reload of watcher and session
     if (path.dirname(filepath) === __dirname) {
       this.data.publish('core', 'reload');
       return;

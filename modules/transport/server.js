@@ -1,18 +1,17 @@
-module.exports = function (Session) {
+module.exports = function () {
 
-  var Transport = function (session, options) {
-    this.session = session;
-    this.client  = 'Transport';
-    this.options = options;
+  var config = {};
+
+  if (arguments.length % 2 === 1)
+    throw new Error('Arguments must be even.');
+  for (var i = 0; i < arguments.length / 2; i++) {
+    config[arguments[i * 2]] = arguments[i * 2 + 1];
   }
 
-  Session.prototype.transport = function (options) {
+  return new Transport(config);
+}
 
-    var t = new Transport(this, options);
-    this._add(t);
-
-    return this;
-
-  }
-
+var Transport = module.exports.Transport = function (config) {
+  this.tempo = config.tempo;
+  this.meter = config.meter;
 }

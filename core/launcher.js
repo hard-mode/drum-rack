@@ -54,6 +54,7 @@ var Application = module.exports = function (srcPath) {
 
     // core events
     bus.subscribe('core');
+    bus.subscribe('using');
 
     // reload child process on code update
     bus.on('message', function (channel, message) {

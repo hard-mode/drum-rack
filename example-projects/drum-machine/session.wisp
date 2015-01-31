@@ -1,6 +1,8 @@
 (session
-  :use  ["http"]
+  :use  ["http" "transport"]
   :info { :name "Sampling Machine" })
 
-(console.log http)
-(http.Server.)
+(http 4000
+  (rack "Sequencing"
+    (transport :tempo 140
+               :meter [4 4] )))

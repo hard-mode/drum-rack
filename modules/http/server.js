@@ -2,12 +2,25 @@ var fs   = require('fs')   // filesystem ops
   , hapi = require('hapi') // http framework
   , vm   = require('vm');  // eval templates
 
-module.exports = {}
 
-var Server = module.exports['Server'] = function (app) {
+module.exports = function () {
+  var port   = arguments[0]
+    , server = new Server({ port: port }); 
+
+  return function (context) {
+    context.http = { server: server };
+    for (var i in arguments) {
+      if (i == 0) continue;
+      body[i](context);
+    }
+  }
+}
+
+
+var Server = module.exports.Server = function (config) {
 
   this.server = new hapi.Server();
-  this.server.connection({ port: 4000 });
+  this.server.connection({ port: config.port });
 
   for (var i in this.routes) {
     var route = this.routes[i];
@@ -19,6 +32,7 @@ var Server = module.exports['Server'] = function (app) {
   this.server.start(this.started.bind(this));
 
 };
+
 
 Server.prototype = {
 
