@@ -28,10 +28,14 @@ var Watcher = module.exports = function () {
     [ 'core/**/*' ],
     this.initWatcher.bind(this));
 
+  this.extra = [];
   this.bus.subscribe('using');
   this.bus.subscribe('session-open');
   this.bus.on('message', function (channel, message) {
-    this.gaze.add([message]);
+    this.gaze.add(message);
+    var p = path.resolve(message);
+    if (this.extra.indexOf(p) === -1)
+      this.extra.push(p);
   }.bind(this));
 
 };
@@ -53,6 +57,18 @@ Watcher.prototype = {
 
     console.log(event, filepath);
     console.log(path.relative(__dirname, filepath));
+    console.log(path.dirname(path.dirname(filepath)));
+    console.log(this.extra);
+
+    if (filepath === path.join(__dirname, 'context.js')) {
+      this.data.publish('session', 'reload');
+      return;
+    }
+
+    if (this.extra.indexOf(filepath) !== -1) {
+      this.data.publish('session', 'reload');
+      return;
+    }
 
     // editing any file in the core directory
     // triggers reload of watcher and session
@@ -60,10 +76,6 @@ Watcher.prototype = {
       this.data.publish('core', 'reload');
       return;
     };
-
-    if (filepath === path.join(__dirname, 'context.js')) {
-      this.data.publish('session', 'reload');
-    }
 
     this.data.publish('watcher', event + ' ' + filepath); 
 
