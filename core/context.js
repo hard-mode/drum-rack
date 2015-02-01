@@ -10,7 +10,7 @@ initSession = function (config) {
     config.use.map(function(moduleName) {
       var modulePath = path.join('modules', moduleName, 'server.js');
       console.log("Using module", moduleName);
-      redis.publish('using', modulePath);
+      redis.publish('using', path.dirname(modulePath));
       this[moduleName] = require(path.join('..', modulePath));
     }.bind(this));
 
