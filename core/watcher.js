@@ -55,10 +55,15 @@ Watcher.prototype = {
 
   onWatcherEvent: function (event, filepath) {
 
-    console.log(event, filepath);
-    console.log(path.relative(__dirname, filepath));
-    console.log(path.dirname(path.dirname(filepath)));
-    console.log(this.extra);
+    this.data.publish('watcher', event + ' ' + filepath); 
+
+    if (endsWith(filepath, '.jade')) {
+      this.compileTemplates(path.dirname(filepath));
+    } else if (endsWith(filepath, '.styl')) {
+      this.compileStylesheets(path.dirname(filepath));
+    } else if (endsWith(filepath, '.wisp')) {
+      this.compileWisp(filepath);
+    }
 
     if (filepath === path.join(__dirname, 'context.js')) {
       this.data.publish('session', 'reload');
@@ -76,16 +81,6 @@ Watcher.prototype = {
       this.data.publish('core', 'reload');
       return;
     };
-
-    this.data.publish('watcher', event + ' ' + filepath); 
-
-    if (endsWith(filepath, '.jade')) {
-      this.compileTemplates(path.dirname(filepath));
-    } else if (endsWith(filepath, '.styl')) {
-      this.compileStylesheets(path.dirname(filepath));
-    } else if (endsWith(filepath, '.wisp')) {
-      this.compileWisp(filepath);
-    }
 
   },
 

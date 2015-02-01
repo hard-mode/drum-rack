@@ -1,17 +1,18 @@
 module.exports = function () {
-
-  var config = {};
+  var options = {};
 
   if (arguments.length % 2 === 1)
     throw new Error('Arguments must be even.');
   for (var i = 0; i < arguments.length / 2; i++) {
-    config[arguments[i * 2]] = arguments[i * 2 + 1];
+    options[arguments[i * 2]] = arguments[i * 2 + 1];
   }
 
-  return new Transport(config);
+  return function (context) {
+    context.transport = new Transport(context, options);
+  }
 }
 
-var Transport = module.exports.Transport = function (config) {
-  this.tempo = config.tempo;
-  this.meter = config.meter;
+var Transport = module.exports.Transport = function (context, options) {
+  this.tempo = options.tempo;
+  this.meter = options.meter;
 }

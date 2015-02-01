@@ -1,26 +1,27 @@
 var fs   = require('fs')   // filesystem ops
   , hapi = require('hapi') // http framework
-  , vm   = require('vm');  // eval templates
+  , path = require('path') // path operation
+  , jade = require('jade') // html templates
 
 
 module.exports = function () {
-  var port   = arguments[0]
-    , server = new Server({ port: port }); 
-
+  var args = arguments;
   return function (context) {
-    context.http = { server: server };
-    for (var i in arguments) {
+    context.http = new Server(context, { port: args[0] });
+    for (var i in args) {
       if (i == 0) continue;
-      body[i](context);
+      args[i](context);
     }
   }
 }
 
 
-var Server = module.exports.Server = function (config) {
+var Server = module.exports.Server = function (context, options) {
+
+  this.context = context;
 
   this.server = new hapi.Server();
-  this.server.connection({ port: config.port });
+  this.server.connection({ port: options.port });
 
   for (var i in this.routes) {
     var route = this.routes[i];
@@ -47,7 +48,10 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          reply("Hello world!");
+          reply(jade.renderFile(
+            path.join(__dirname, 'index.jade'),
+            { metadata: this.context.config.info
+            , using:    this.context.config.use }));
 
         } }
 
@@ -55,14 +59,9 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          var app = this;
-
-          app.datastore.get('templates', function (err, data) {
-
+          this.context.data.get('templates', function (err, data) {
             if (err) throw err;
-
             reply(data).type('text/javascript');
-
           });
 
         } }
@@ -71,14 +70,9 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          var app = this;
-
-          app.datastore.get('stylesheet', function (err, data) {
-
+          this.context.data.get('stylesheet', function (err, data) {
             if (err) throw err;
-
             reply(data).type('text/css');
-
           })
 
         } }
@@ -87,8 +81,7 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          var app  = this
-            , file = path.join('.'
+          var file = path.join('.'
                               , 'modules'
                               , request.params.module
                               , 'client.js');

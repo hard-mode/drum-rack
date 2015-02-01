@@ -11,7 +11,8 @@ var SessionLauncher = function () {
   this.path    = process.env.SESSION;
   this.context = { process: process
                  , console: console
-                 , require: require };
+                 , require: require
+                 , data:    this.data };
   this.sandbox = vm.createContext(this.context);
 
   var data = this.data

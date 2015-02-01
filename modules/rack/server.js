@@ -1,32 +1,12 @@
-module.exports = function (Session) {
-
-  var Rack = function (session, name) {
-    this.session    = session;
-    this.components = [];
-    this.client     = 'Rack';
-
-    this.options = { name: name };
-  }
-
-  Session.prototype.rack = function (name) {
-
-    // add rack to session components
-    var r = new Rack(this, name);
-    this._add(r);
-
-    // rack takes over subsequent additions
-    r._addToParent = this._add;
-    this._add      = this._add.bind(r);
-
-    // until this method is called to end rack
-    this.end = function () {
-      this._add = r._addToParent;
-      delete this.end;
-      return this;
+module.exports = function () {
+  var args = arguments;
+  return function (context) {
+    context.rack = new Rack(context, {name: args[0]});
+    for (var i in args) {
+      if (i == 0) continue;
+      args[i](context);
     }
-
-    return this;
-
   }
+};
 
-}
+var Rack = module.exports.Rack = function (context, options) {};
