@@ -41,9 +41,9 @@ var Watcher = module.exports = function () {
     }
   }.bind(this));
 
+  this.compileSession();
   this.compileStyles();
   this.compileScripts();
-  this.compileSession();
 
 };
 
@@ -80,7 +80,7 @@ Watcher.prototype = {
 
   onWatcherEvent: function (event, filepath) {
 
-    this.data.publish('watcher', event + ' ' + filepath); 
+    this.data.publish('watcher', event + ':' + filepath);
 
     if (endsWith(filepath, '.jade')) {
       this.compileTemplates(path.dirname(filepath));

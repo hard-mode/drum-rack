@@ -8,12 +8,7 @@ var forever  = require('forever-monitor') // runs eternally
 require('long-stack-traces');
 
 
-var TASKS = { watcher: path.resolve('./core/watcher.js')
-            , session: path.resolve('./core/session.js') };
-
-
-// main application class
-var Application = module.exports = function (srcPath) {
+var Launcher = module.exports = function (srcPath) {
 
   // determine session path
   if (srcPath) {
@@ -41,18 +36,22 @@ var Application = module.exports = function (srcPath) {
       mon.on('monitor', this.onMonitor.bind(this));
     }.bind(this));
 
-    var bus   = this.cache.bus = redis.createClient(port, '127.0.0.1', {});
-    var tasks = this.tasks     = {};
-    for (var i in TASKS) {
-      tasks[i] = new (forever.Monitor)
-        ( TASKS[i]
-        , { env: { REDIS:   port,
-                   SESSION: this.path } } );
-      tasks[i].start();
-      bus.subscribe(i);
-    };
+    var bus = this.cache.bus = redis.createClient(port, '127.0.0.1', {});
+    var env = { REDIS: port, SESSION: this.path };
+    Object.keys(this.tasks).map(function (taskName) {
+      var task =
+        { path:    this.tasks[taskName]
+        , monitor: new (forever.Monitor)( this.tasks[taskName], { env: env } )};
+      task.monitor.start();
+      bus.subscribe(taskName);
+      this.tasks[taskName] = task;
+    }.bind(this));
 
-    bus.on('message', this.onMessage.bind(this));
+    bus.on('message', function (channel, message) {
+      if (this.onMessage[channel]) {
+        (this.onMessage[channel].bind(this))(message);
+      }
+    }.bind(this));
 
  
   }.bind(this));
@@ -60,38 +59,32 @@ var Application = module.exports = function (srcPath) {
 };
 
 
-Application.prototype.onMonitor = function (time, args) {
+Launcher.prototype.tasks =
+  { watcher: path.resolve('./core/watcher.js')
+  , session: path.resolve('./core/session.js') };
+
+
+Launcher.prototype.onMonitor = function (time, args) {
   if (args[0] === 'publish') console.log("PUBLISH ::", args.slice(1));
-}
+};
 
 
-Application.prototype.onMessage = function (channel, message) {
-  console.log("==>", channel, '::', message);
-
-  if (channel === 'core' && message === 'reload') {
-
-    for (var i in TASKS) {
-      console.log('    Reloading', i + '.');
-      this.tasks[i].restart();
-    }
-    console.log();
-
-  } else {
-
-    for (var i in TASKS) {
-      if (channel === i && message === 'reload') {
-        console.log('    Reloading', i + '.\n');
-        this.tasks[i].restart();
+Launcher.prototype.onMessage = {
+  'watcher': function (message) {
+    var m = message.split(':');
+    for (var i in this.tasks) {
+      var p = this.tasks[i].path;
+      if (m[1] && m[1].indexOf(p) === m[1].length - p.length) {
+        console.log("  Restarting task ::", i);
+        this.tasks[i].monitor.restart();
         return;
       }
     }
-
   }
-
-}
+};
 
 
 // entry point
 if (require.main === module) {
-  var app = new Application(process.argv[2]);
-}
+  var app = new Launcher(process.argv[2]);
+};
