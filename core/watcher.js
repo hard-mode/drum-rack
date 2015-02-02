@@ -208,7 +208,8 @@ Watcher.prototype = {
 
       if (err) throw err;
 
-      data.set('session', wisp.compile(source).code);
+      var compiled = wisp.compile(source)
+      data.set('session', compiled.code);
       data.publish('updated', 'session');
  
     });

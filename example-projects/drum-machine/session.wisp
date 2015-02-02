@@ -1,19 +1,13 @@
-(defmacro
-  watch-deps!
-  [args]
-  (console.log "ARGHHHHH!" arguments)
-  args)
+(defmacro session [options & body]
+  `(do (init-session ~options)
+       (execute-body! ~@body)))
 
 
-(watch-deps! [1 2 3] ["foo bar baz"])
+(session
 
-
-(init-session!
   { :use  [ "http" "rack" "transport" ]
     :info { :name   "Sampling Machine" 
-            :author "Mlad Konstruktor <fallenblood@gmail.com>"} } )
-
-(execute-body!
+            :author "Mlad Konstruktor <fallenblood@gmail.com>"} }
 
   (http 4000
     (rack "Sequencer"

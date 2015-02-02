@@ -1,3 +1,8 @@
+prepareSession = function (options) {
+  console.log("OPTS", options);
+}
+
+
 initSession = function (config) {
 
   this.config = config;
