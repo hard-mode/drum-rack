@@ -25,67 +25,70 @@ var Application = module.exports = function (srcPath) {
   }
 
   // get a free port for running a redis server
-  // TODO fixed port, pidfiles
   freeport(function (err, port) {
 
     console.log("Starting Redis on port", port);
 
-    // start redis
-    this.redis = forever.start(
-      ['redis-server', '--port', port],
-      { silent:  true
-      , pidFile: '/home/epimetheus/redis.pid' });
+    var cache = this.cache = {
+      server:  forever.start(
+        ['redis-server', '--port', port],
+        { silent:  true
+        , pidFile: '/home/epimetheus/redis.pid' }) };
 
-    var bus = this.bus = redis.createClient(port, '127.0.0.1', {});
+    var mon = this.cache.monitor = redis.createClient(port, '127.0.0.1', {});
+    mon.monitor(function (err, res) {
+      if (err) throw err;
+      mon.on('monitor', this.onMonitor.bind(this));
+    }.bind(this));
 
-    // start child processes
-    var tasks = this.tasks = {};
+    var bus   = this.cache.bus = redis.createClient(port, '127.0.0.1', {});
+    var tasks = this.tasks     = {};
     for (var i in TASKS) {
-
       tasks[i] = new (forever.Monitor)
         ( TASKS[i]
         , { env: { REDIS:   port,
                    SESSION: this.path } } );
       tasks[i].start();
-
       bus.subscribe(i);
+    };
 
-    }
+    bus.on('message', this.onMessage.bind(this));
 
-    // core events
-    bus.subscribe('core');
-    bus.subscribe('using');
-
-    // reload child process on code update
-    bus.on('message', function (channel, message) {
-
-      console.log("==>", channel, '::', message);
-
-      if (channel === 'core' && message === 'reload') {
-
-        for (var i in TASKS) {
-          console.log('    Reloading', i + '.');
-          tasks[i].restart();
-        }
-        console.log();
-
-      } else {
-
-        for (var i in TASKS) {
-          if (channel === i && message === 'reload') {
-            console.log('    Reloading', i + '.\n');
-            tasks[i].restart();
-            return;
-          }
-        }
-
-      }
-
-    });
  
   }.bind(this));
   
 };
+
+
+Application.prototype.onMonitor = function (time, args) {
+  if (args[0] === 'publish') console.log("PUBLISH ::", args.slice(1));
+}
+
+
+Application.prototype.onMessage = function (channel, message) {
+  console.log("==>", channel, '::', message);
+
+  if (channel === 'core' && message === 'reload') {
+
+    for (var i in TASKS) {
+      console.log('    Reloading', i + '.');
+      this.tasks[i].restart();
+    }
+    console.log();
+
+  } else {
+
+    for (var i in TASKS) {
+      if (channel === i && message === 'reload') {
+        console.log('    Reloading', i + '.\n');
+        this.tasks[i].restart();
+        return;
+      }
+    }
+
+  }
+
+}
 
 
 // entry point

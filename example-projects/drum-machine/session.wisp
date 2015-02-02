@@ -1,3 +1,13 @@
+(defmacro
+  watch-deps!
+  [args]
+  (console.log "ARGHHHHH!")
+  args)
+
+
+(watch-deps! [1 2 3])
+
+
 (init-session!
   { :use  [ "http" "rack" "transport" ]
     :info { :name   "Sampling Machine" 

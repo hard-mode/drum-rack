@@ -25,7 +25,11 @@ var Watcher = module.exports = function () {
 
   this.gaze = gaze(
     [ 'core/**/*' ],
-    this.initWatcher.bind(this));
+    function (err, watcher) {
+      if (err) throw err;
+      this.data.publish('watcher', 'ready');
+      watcher.on('all', this.onWatcherEvent.bind(this));
+    }.bind(this));
 
   this.extra = {};
 
@@ -39,7 +43,7 @@ var Watcher = module.exports = function () {
 
   this.compileStyles();
   this.compileScripts();
-  this.compileSession(process.env.SESSION);
+  this.compileSession();
 
 };
 
@@ -53,9 +57,11 @@ Watcher.prototype = {
   onMessage: {
 
     'session-open': function (message) {
-      this.extra['session'] =
+      var s = this.extra['session'] =
         { dir:  path.dirname(message)
-        , glob: message };
+        , file: message };
+      s.glob = path.join(s.dir, '**', '*');
+      this.compileAll();
     },
 
     'using': function (message) {
@@ -72,15 +78,6 @@ Watcher.prototype = {
   },
 
 
-  initWatcher: function (err, watcher) {
-
-    if (err) throw err;
-    this.data.publish('watcher', 'ready');
-    watcher.on('all', this.onWatcherEvent.bind(this));
-
-  },
-
-
   onWatcherEvent: function (event, filepath) {
 
     this.data.publish('watcher', event + ' ' + filepath); 
@@ -92,7 +89,7 @@ Watcher.prototype = {
     } else if (endsWith(filepath, '.styl')) {
       this.compileStyles();
     } else if (endsWith(filepath, '.wisp')) {
-      this.compileSession(filepath);
+      this.compileSession();
     }
 
     // editing any file in the core directory
@@ -105,6 +102,14 @@ Watcher.prototype = {
     // editing any other file reloads session
     this.data.publish('session', 'reload');
 
+  },
+
+
+  compileAll: function () {
+    this.compileTemplates();
+    this.compileScripts();
+    this.compileStyles();
+    this.compileSession();
   },
 
 
@@ -187,7 +192,11 @@ Watcher.prototype = {
 
   compileSession: function (src) {
 
-    console.log('Compiling Wisp:', src);
+    src = process.env.SESSION;
+
+    if (!src) return;
+
+    console.log('Compiling session:', src);
 
     var data = this.data;
 
