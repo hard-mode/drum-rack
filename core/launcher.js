@@ -37,6 +37,10 @@ var Launcher = module.exports = function (srcPath) {
       mon.on('monitor', this.onMonitor.bind(this));
     }.bind(this));
 
+    // clean up
+    var data = this.cache.data = redis.createClient(port, '127.0.0.1', {});
+    data.del('session');
+
     // start tasks
     var env = { REDIS: port, SESSION: this.path };
     Object.keys(this.tasks).map(function (taskName) {
@@ -53,17 +57,14 @@ var Launcher = module.exports = function (srcPath) {
     bus.on('message', function (channel, message) {
       if (message === 'all') {
         Object.keys(this.tasks).map(this.reloadTask.bind(this));
+        this.loadSession();
       } else if (this.tasks[message]) {
         this.reloadTask(message);
       }
     }.bind(this));
 
     // load session
-    var data = this.cache.data = redis.createClient(port, '127.0.0.1', {});
-    data.del('session');
-    setTimeout(function(){
-    if (this.path) data.publish('session-open', this.path);
-    }.bind(this), 1000);
+    this.loadSession();
  
   }.bind(this));
   
@@ -73,6 +74,13 @@ var Launcher = module.exports = function (srcPath) {
 Launcher.prototype.tasks =
   { watcher: path.resolve('./core/watcher.js')
   , session: path.resolve('./core/session.js') };
+
+
+Launcher.prototype.loadSession = function () {
+  setTimeout(function(){
+    if (this.path) this.cache.data.publish('session-open', this.path);
+  }.bind(this), 1000);
+}
 
 
 Launcher.prototype.reloadTask = function (taskName) {
