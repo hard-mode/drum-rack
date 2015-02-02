@@ -18,9 +18,12 @@ module.exports = function () {
 
 var Server = module.exports.Server = function (context, options) {
 
-  this.context = context;
-
-  this.server = new hapi.Server();
+  this.title   = context.config.info.name;
+  this.data    = context.data;
+  this.scripts = [];
+  this.styles  = [];
+  this.init    = [];
+  this.server  = new hapi.Server();
   this.server.connection({ port: options.port });
 
   for (var i in this.routes) {
@@ -50,8 +53,10 @@ Server.prototype = {
 
           reply(jade.renderFile(
             path.join(__dirname, 'index.jade'),
-            { metadata: this.context.config.info
-            , using:    this.context.config.use }));
+            { scripts:  this.scripts
+            , styles:   this.styles
+            , init:     this.init
+            , title:    this.title }));
 
         } }
 
@@ -59,7 +64,7 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          this.context.data.get('templates', function (err, data) {
+          this.data.get('templates', function (err, data) {
             if (err) throw err;
             reply(data).type('text/javascript');
           });
@@ -70,7 +75,7 @@ Server.prototype = {
       , method:  'GET'
       , handler: function (request, reply) {
 
-          this.context.data.get('stylesheet', function (err, data) {
+          this.data.get('stylesheet', function (err, data) {
             if (err) throw err;
             reply(data).type('text/css');
           })

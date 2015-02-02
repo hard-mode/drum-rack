@@ -28,15 +28,20 @@ var Watcher = module.exports = function () {
     [ 'core/**/*' ],
     this.initWatcher.bind(this));
 
-  this.extra = [];
+  this.extra = {};
   this.bus.subscribe('using');
   this.bus.subscribe('session-open');
   this.bus.on('message', function (channel, message) {
-    var p = path.join(path.resolve(message), '**', '*');
-    this.gaze.add(p);
-    if (this.extra.indexOf(p) === -1) {
-      this.extra.push(p);
+
+    if (!this.extra[message]) {
+
+      this.extra[message] =
+        { dir:  path.resolve(message)
+        , glob: path.join(path.resolve(message), '**', '*') }
+      this.gaze.add(this.extra[message].glob);
+
     }
+
   }.bind(this));
 
 };
@@ -102,9 +107,9 @@ Watcher.prototype = {
       fs.readFile(
         temppath,
         { encoding: 'utf8' },
-        function (err, data) {
+        function (err, code) {
           if (err) throw err;
-          data.set('templates', data);
+          data.set('templates', code);
           data.publish('watcher', 'templates');
         });
 

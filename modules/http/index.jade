@@ -4,17 +4,17 @@ html
 
   head
 
-    title= metadata.name
+    title= title
 
     link(rel='stylesheet', href='/styles.css')
 
   body
-
-    script window.HARDMODE = window.session = {};
-    script(src='templates.js')
-    script
-      | window.HARDMODE.TEMPLATES = window.HARDMODE.templatizer;
-      | delete window.HARDMODE.templatizer;
-
-    each v, k in using
-      script(src='modules/' + k)
+    p
+      | Scripts
+      pre= scripts
+    p
+      | Styles
+      pre= styles
+    p
+      | Init
+      pre= styles
