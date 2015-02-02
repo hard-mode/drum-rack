@@ -1,7 +1,7 @@
 (defmacro
   watch-deps!
   [args]
-  (console.log "ARGHHHHH!")
+  (console.log "ARGHHHHH!" arguments)
   args)
 
 

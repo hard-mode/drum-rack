@@ -15,30 +15,32 @@ var SessionLauncher = function () {
                  , data:    this.data };
   this.sandbox = vm.createContext(this.context);
 
-  var data = this.data
-    , bus  = this.bus;
+  if (this.path) this.data.publish('session-open', this.path);
 
-  if (this.path) data.publish('session-open', this.path);
+  this.bus.subscribe('updated');
 
-  // when watcher tells us that the session code
-  // has been updated: tell main process to restart us
-  bus.subscribe('watcher');
-  bus.on('message', function (channel, message) {
-    if (channel === 'watcher' && message === 'session') {
-      console.log('Session updated.');
-      data.publish('session', 'reload');
+  this.bus.on('message', function (channel, message) {
+    if (message === 'session') {
+      this.data.get('session', function (err, sessionCode) {
+
+        if (err) throw err;
+        if (!sessionCode) return;
+
+        // evaluate session context code
+        vm.runInContext(
+          fs.readFileSync(
+            path.join(__dirname, 'context.js'),
+            { encoding: 'utf8' }),
+          this.sandbox,'<session-context>');
+
+        // evaluate your actual session code
+        vm.runInContext(sessionCode, this.sandbox, '<session>');
+
+        // let the world know we're running
+        this.data.publish('session', 'start');
+
+      }.bind(this));
     }
-  });
-
-  // evaluate session context code
-  var code = fs.readFileSync(
-    path.join(__dirname, 'context.js'), { encoding: 'utf8' });
-  vm.runInContext(code, this.sandbox,'<session-context>');
-
-  // evaluate session code
-  var code = this.data.get('session', function (err, code) {
-    this.data.publish('session', 'ready');
-    vm.runInContext(code, this.sandbox, '<session>');
   }.bind(this));
 
 }

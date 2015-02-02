@@ -27,7 +27,6 @@ var Watcher = module.exports = function () {
     [ 'core/**/*' ],
     function (err, watcher) {
       if (err) throw err;
-      this.data.publish('watcher', 'ready');
       watcher.on('all', this.onWatcherEvent.bind(this));
     }.bind(this));
 
@@ -42,8 +41,8 @@ var Watcher = module.exports = function () {
   }.bind(this));
 
   this.compileSession();
-  this.compileStyles();
   this.compileScripts();
+  this.compileStyles();
 
 };
 
@@ -82,6 +81,13 @@ Watcher.prototype = {
 
     this.data.publish('watcher', event + ':' + filepath);
 
+    // editing any file in the core directory
+    // triggers reload of watcher and session
+    if (path.dirname(filepath) === __dirname) {
+      this.data.publish('reload', 'all');
+      return;
+    };
+
     if (endsWith(filepath, '.jade')) {
       this.compileTemplates(path.dirname(filepath));
     } else if (endsWith(filepath, '.js')) {
@@ -92,24 +98,14 @@ Watcher.prototype = {
       this.compileSession();
     }
 
-    // editing any file in the core directory
-    // triggers reload of watcher and session
-    if (path.dirname(filepath) === __dirname) {
-      this.data.publish('core', 'reload');
-      return;
-    };
-
-    // editing any other file reloads session
-    this.data.publish('session', 'reload');
-
   },
 
 
   compileAll: function () {
+    this.compileSession();
     this.compileTemplates();
     this.compileScripts();
     this.compileStyles();
-    this.compileSession();
   },
 
 
@@ -140,7 +136,7 @@ Watcher.prototype = {
         function (err, code) {
           if (err) throw err;
           data.set('templates', code);
-          data.publish('watcher', 'templates');
+          data.publish('updated', 'templates');
         });
 
     });
@@ -166,7 +162,7 @@ Watcher.prototype = {
     styl.render(function (err, css) {
       if (err) throw err;
       this.data.set('style', css);
-      this.data.publish('watcher', 'style');
+      this.data.publish('updated', 'style');
     }.bind(this));
 
   },
@@ -205,7 +201,7 @@ Watcher.prototype = {
       if (err) throw err;
 
       data.set('session', wisp.compile(source).code);
-      data.publish('watcher', 'session');
+      data.publish('updated', 'session');
  
     });
 

@@ -30,29 +30,33 @@ var Launcher = module.exports = function (srcPath) {
         { silent:  true
         , pidFile: '/home/epimetheus/redis.pid' }) };
 
+    // start redis activity monitor
     var mon = this.cache.monitor = redis.createClient(port, '127.0.0.1', {});
     mon.monitor(function (err, res) {
       if (err) throw err;
       mon.on('monitor', this.onMonitor.bind(this));
     }.bind(this));
 
-    var bus = this.cache.bus = redis.createClient(port, '127.0.0.1', {});
+    // start tasks
     var env = { REDIS: port, SESSION: this.path };
     Object.keys(this.tasks).map(function (taskName) {
       var task =
         { path:    this.tasks[taskName]
         , monitor: new (forever.Monitor)( this.tasks[taskName], { env: env } )};
       task.monitor.start();
-      bus.subscribe(taskName);
       this.tasks[taskName] = task;
     }.bind(this));
 
+    // restart tasks on command
+    var bus = this.cache.bus = redis.createClient(port, '127.0.0.1', {});
+    bus.subscribe('reload');
     bus.on('message', function (channel, message) {
-      if (this.onMessage[channel]) {
-        (this.onMessage[channel].bind(this))(message);
+      if (message === 'all') {
+        Object.keys(this.tasks).map(this.reload.bind(this));
+      } else if (this.tasks[message]) {
+        this.reload(message);
       }
     }.bind(this));
-
  
   }.bind(this));
   
@@ -64,23 +68,13 @@ Launcher.prototype.tasks =
   , session: path.resolve('./core/session.js') };
 
 
+Launcher.prototype.reload = function (taskName) {
+  this.tasks[taskName].monitor.restart();
+}
+
+
 Launcher.prototype.onMonitor = function (time, args) {
   if (args[0] === 'publish') console.log("PUBLISH ::", args.slice(1));
-};
-
-
-Launcher.prototype.onMessage = {
-  'watcher': function (message) {
-    var m = message.split(':');
-    for (var i in this.tasks) {
-      var p = this.tasks[i].path;
-      if (m[1] && m[1].indexOf(p) === m[1].length - p.length) {
-        console.log("  Restarting task ::", i);
-        this.tasks[i].monitor.restart();
-        return;
-      }
-    }
-  }
 };
 
 
