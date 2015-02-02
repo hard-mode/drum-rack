@@ -5,7 +5,7 @@
   args)
 
 
-(watch-deps! [1 2 3])
+(watch-deps! [1 2 3] ["foo bar baz"])
 
 
 (init-session!

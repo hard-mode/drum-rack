@@ -23,14 +23,19 @@ var Watcher = module.exports = function () {
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
 
-  this.gaze = gaze(
-    [ 'core/**/*' ],
-    function (err, watcher) {
-      if (err) throw err;
-      watcher.on('all', this.onWatcherEvent.bind(this));
-    }.bind(this));
-
   this.extra = {};
+
+  this.gaze = gaze(
+
+    [ 'core/**/*' ],
+
+    function (err, watcher) {
+
+      if (err) throw err;
+
+      watcher.on('all', this.onWatcherEvent.bind(this));
+
+    }.bind(this));
 
   this.bus.subscribe('using');
   this.bus.subscribe('session-open');
@@ -39,10 +44,6 @@ var Watcher = module.exports = function () {
       (this.onMessage[channel].bind(this))(message);
     }
   }.bind(this));
-
-  this.compileSession();
-  this.compileScripts();
-  this.compileStyles();
 
 };
 
@@ -56,10 +57,12 @@ Watcher.prototype = {
   onMessage: {
 
     'session-open': function (message) {
+      console.log("OPEN", message);
       var s = this.extra['session'] =
         { dir:  path.dirname(message)
         , file: message };
       s.glob = path.join(s.dir, '**', '*');
+      this.gaze.add(s.glob);
       this.compileAll();
     },
 
@@ -86,16 +89,20 @@ Watcher.prototype = {
     if (path.dirname(filepath) === __dirname) {
       this.data.publish('reload', 'all');
       return;
-    };
+    } else {
 
     if (endsWith(filepath, '.jade')) {
       this.compileTemplates(path.dirname(filepath));
     } else if (endsWith(filepath, '.js')) {
       this.compileScripts();
+      this.data.publish('reload', 'all');
     } else if (endsWith(filepath, '.styl')) {
       this.compileStyles();
     } else if (endsWith(filepath, '.wisp')) {
       this.compileSession();
+      this.data.publish('reload', 'all');
+    }
+
     }
 
   },
@@ -182,6 +189,7 @@ Watcher.prototype = {
     }
 
     this.data.set('script', script);
+    this.data.publish('updated', 'scripts');
 
   },
 

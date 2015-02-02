@@ -52,11 +52,18 @@ var Launcher = module.exports = function (srcPath) {
     bus.subscribe('reload');
     bus.on('message', function (channel, message) {
       if (message === 'all') {
-        Object.keys(this.tasks).map(this.reload.bind(this));
+        Object.keys(this.tasks).map(this.reloadTask.bind(this));
       } else if (this.tasks[message]) {
-        this.reload(message);
+        this.reloadTask(message);
       }
     }.bind(this));
+
+    // load session
+    var data = this.cache.data = redis.createClient(port, '127.0.0.1', {});
+    data.del('session');
+    setTimeout(function(){
+    if (this.path) data.publish('session-open', this.path);
+    }.bind(this), 1000);
  
   }.bind(this));
   
@@ -68,13 +75,15 @@ Launcher.prototype.tasks =
   , session: path.resolve('./core/session.js') };
 
 
-Launcher.prototype.reload = function (taskName) {
+Launcher.prototype.reloadTask = function (taskName) {
+  console.log('---> Reload', taskName);
   this.tasks[taskName].monitor.restart();
 }
 
 
 Launcher.prototype.onMonitor = function (time, args) {
   if (args[0] === 'publish') console.log("PUBLISH ::", args.slice(1));
+  if (args[0] === 'subscribe') console.log("SUBSCRIBE ::", args.slice(1));
 };
 
 

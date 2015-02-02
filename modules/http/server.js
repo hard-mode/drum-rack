@@ -28,7 +28,8 @@ var Server = module.exports.Server = function (context, options) {
   for (var i in this.routes) {
     var route = this.routes[i];
     if (route.handler.bind) route.handler = route.handler.bind(this);
-    console.log("Registering route", route.method || "GET", route.path);
+    console.log("Registering route", route.method || "GET",
+                this.server.info.uri + route.path);
     this.server.route(route);
   }
 

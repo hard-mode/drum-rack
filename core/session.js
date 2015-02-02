@@ -15,9 +15,8 @@ var SessionLauncher = function () {
                  , data:    this.data };
   this.sandbox = vm.createContext(this.context);
 
-  if (this.path) this.data.publish('session-open', this.path);
-
   this.bus.subscribe('updated');
+  this.bus.subscribe('session-open');
 
   this.bus.on('message', function (channel, message) {
     if (message === 'session') {
