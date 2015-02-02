@@ -20,7 +20,8 @@ var Server = module.exports.Server = function (context, options) {
 
   this.title  = context.config.info.name;
   this.data   = context.data;
-  this.port   = options.port
+  this.port   = options.port;
+  this.init   = [];
   this.server = new hapi.Server();
   this.server.connection({ port: options.port });
 
@@ -48,6 +49,8 @@ Server.prototype = {
     [ { path:    '/'
       , method:  'GET'
       , handler: function (request, reply) {
+
+          console.log(this.port, this.title);
 
           reply(jade.renderFile(
             path.join(__dirname, 'index.jade'),

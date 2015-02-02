@@ -7,12 +7,15 @@ initSession = function (config) {
     var path  = require('path')
       , redis = require('redis').createClient(process.env.REDIS, '127.0.0.1', {});
 
-    config.use.map(function(moduleName) {
-      var modulePath = path.join('modules', moduleName, 'server.js');
-      console.log("Using module", moduleName);
-      redis.publish('using', path.dirname(modulePath));
-      this[moduleName] = require(path.join('..', modulePath));
-    }.bind(this));
+    redis.publish(
+      'using',
+      config.use.map(function(moduleName) {
+        var modulePath = path.join('modules', moduleName, 'server.js');
+        console.log("Using module", moduleName);
+        this[moduleName] = require(path.join('..', modulePath));
+        return path.dirname(modulePath);
+      }.bind(this))
+    );
 
   }
 
@@ -21,7 +24,9 @@ initSession = function (config) {
 
 executeBody = function () {
   for (var i in arguments) {
-    arguments[i]({ config: this.config
-                 , data:   data });
+    var context =
+      { config: this.config
+      , data:   data }
+    arguments[i](context);
   }
 }.bind(this);

@@ -28,34 +28,49 @@ var Watcher = module.exports = function () {
     this.initWatcher.bind(this));
 
   this.extra = {};
+
   this.bus.subscribe('using');
   this.bus.subscribe('session-open');
   this.bus.on('message', function (channel, message) {
-
-    if (channel === 'session-open') {
-
-      this.extra['session'] = { dir:  path.dirname(message)
-                              , glob: message };
-    } else {
-
-      this.extra[message] =
-        { dir:  path.resolve(message)
-        , glob: path.join(path.resolve(message), '**', '*') }
-      this.gaze.add(this.extra[message].glob);
-
+    if (this.onMessage[channel]) {
+      (this.onMessage[channel].bind(this))(message);
     }
-
   }.bind(this));
 
-  this.compileStylesheets();
-  this.compileWisp(process.env.SESSION);
+  this.compileStyles();
+  this.compileScripts();
+  this.compileSession(process.env.SESSION);
 
 };
 
 
 Watcher.prototype = {
 
+
   constructor: Watcher,
+
+
+  onMessage: {
+
+    'session-open': function (message) {
+      this.extra['session'] =
+        { dir:  path.dirname(message)
+        , glob: message };
+    },
+
+    'using': function (message) {
+      var modules = message.split(',');
+      for (var i in modules) {
+        var module = modules[i];
+        this.extra[module] =
+          { dir:  path.resolve(module)
+          , glob: path.join(path.resolve(module), '**', '*') }
+        this.gaze.add(this.extra[module].glob);
+      }
+    }
+
+  },
+
 
   initWatcher: function (err, watcher) {
 
@@ -65,16 +80,19 @@ Watcher.prototype = {
 
   },
 
+
   onWatcherEvent: function (event, filepath) {
 
     this.data.publish('watcher', event + ' ' + filepath); 
 
     if (endsWith(filepath, '.jade')) {
       this.compileTemplates(path.dirname(filepath));
+    } else if (endsWith(filepath, '.js')) {
+      this.compileScripts();
     } else if (endsWith(filepath, '.styl')) {
-      this.compileStylesheets();
+      this.compileStyles();
     } else if (endsWith(filepath, '.wisp')) {
-      this.compileWisp(filepath);
+      this.compileSession(filepath);
     }
 
     // editing any file in the core directory
@@ -88,6 +106,7 @@ Watcher.prototype = {
     this.data.publish('session', 'reload');
 
   },
+
 
   compileTemplates: function (srcdir) {
 
@@ -123,35 +142,50 @@ Watcher.prototype = {
 
   },
 
-  compileStylesheets: function () {
+
+  compileStyles: function () {
 
     console.log("Compiling stylesheets.");
 
     var styl = stylus('');
-
-    //styl.set('paths',   [srcdir]);
     styl.set('filename', 'style.css');
-
     styl.import('modules/global');
 
     for (var i in this.extra) {
       var n = i.split('/')[1]
         , d = this.extra[i].dir
         , p = path.join(d, n + '.styl');
-      console.log("ASF", n, d, p);
       if (fs.existsSync(p)) styl.import(d + '/' + n);
     }
 
     styl.render(function (err, css) {
       if (err) throw err;
-      console.log(css);
       this.data.set('style', css);
       this.data.publish('watcher', 'style');
     }.bind(this));
 
   },
 
-  compileWisp: function (src) {
+
+  compileScripts: function () {
+
+    console.log("Compiling scripts.");
+
+    var script = '';
+
+    for (var i in this.extra) {
+      var n = i.split('/')[1]
+        , d = this.extra[i].dir
+        , p = path.join(d, 'client.js');
+      if (fs.existsSync(p)) script += fs.readFileSync(p, {encoding: 'utf8'}) + '\n';
+    }
+
+    this.data.set('script', script);
+
+  },
+
+
+  compileSession: function (src) {
 
     console.log('Compiling Wisp:', src);
 
@@ -167,6 +201,7 @@ Watcher.prototype = {
     });
 
   }
+
 
 };
 
