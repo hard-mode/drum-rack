@@ -18,12 +18,10 @@ module.exports = function () {
 
 var Server = module.exports.Server = function (context, options) {
 
-  this.title   = context.config.info.name;
-  this.data    = context.data;
-  this.scripts = [];
-  this.styles  = [];
-  this.init    = [];
-  this.server  = new hapi.Server();
+  this.title  = context.config.info.name;
+  this.data   = context.data;
+  this.port   = options.port
+  this.server = new hapi.Server();
   this.server.connection({ port: options.port });
 
   for (var i in this.routes) {
@@ -53,53 +51,32 @@ Server.prototype = {
 
           reply(jade.renderFile(
             path.join(__dirname, 'index.jade'),
-            { scripts:  this.scripts
-            , styles:   this.styles
-            , init:     this.init
-            , title:    this.title }));
+            { port:  this.port
+            , title: this.title }));
 
         } }
 
-    , { path:    '/templates.js'
+    , { path:    '/style'
       , method:  'GET'
       , handler: function (request, reply) {
 
-          this.data.get('templates', function (err, data) {
-            if (err) throw err;
-            reply(data).type('text/javascript');
-          });
-
-        } }
-
-    , { path:    '/styles.css'
-      , method:  'GET'
-      , handler: function (request, reply) {
-
-          this.data.get('stylesheet', function (err, data) {
+          this.data.get('style', function (err, data) {
             if (err) throw err;
             reply(data).type('text/css');
           })
 
         } }
 
-    , { path:    '/modules/{module}'
+    , { path:    '/script'
       , method:  'GET'
       , handler: function (request, reply) {
 
-          var file = path.join('.'
-                              , 'modules'
-                              , request.params.module
-                              , 'client.js');
+          this.data.get('script', function (err, data) {
+            if (err) throw err;
+            reply(data).type('text/css');
+          })
 
-          reply.file(file).type('text/javascript');
-
-        }
-      }
-
-    , { path:   '/libs/{path*}'
-      , method: 'GET'
-      , handler: { directory: { path: 'bower_components/' } }
-      }
+        } }
 
     ]
 

@@ -23,7 +23,6 @@ var Watcher = module.exports = function () {
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
 
-  this.compileWisp(process.env.SESSION);
   this.gaze = gaze(
     [ 'core/**/*' ],
     this.initWatcher.bind(this));
@@ -33,7 +32,11 @@ var Watcher = module.exports = function () {
   this.bus.subscribe('session-open');
   this.bus.on('message', function (channel, message) {
 
-    if (!this.extra[message]) {
+    if (channel === 'session-open') {
+
+      this.extra['session'] = { dir:  path.dirname(message)
+                              , glob: message };
+    } else {
 
       this.extra[message] =
         { dir:  path.resolve(message)
@@ -43,6 +46,9 @@ var Watcher = module.exports = function () {
     }
 
   }.bind(this));
+
+  this.compileStylesheets();
+  this.compileWisp(process.env.SESSION);
 
 };
 
@@ -66,7 +72,7 @@ Watcher.prototype = {
     if (endsWith(filepath, '.jade')) {
       this.compileTemplates(path.dirname(filepath));
     } else if (endsWith(filepath, '.styl')) {
-      this.compileStylesheets(path.dirname(filepath));
+      this.compileStylesheets();
     } else if (endsWith(filepath, '.wisp')) {
       this.compileWisp(filepath);
     }
@@ -117,44 +123,31 @@ Watcher.prototype = {
 
   },
 
-  compileStylesheets: function (srcdir) {
+  compileStylesheets: function () {
 
     console.log("Compiling stylesheets.");
 
-    var data = this.data;
+    var styl = stylus('');
 
-    fs.readdir(srcdir, function (err, files) {
+    //styl.set('paths',   [srcdir]);
+    styl.set('filename', 'style.css');
 
-      var directories = files.filter(
-        function (f) {
-          try {
-            return fs.statSync(path.join(srcdir, f)).isDirectory();
-          } catch (e) {
-            return false;
-          }
-        }
-      );
+    styl.import('modules/global');
 
-      var styl = stylus('');
+    for (var i in this.extra) {
+      var n = i.split('/')[1]
+        , d = this.extra[i].dir
+        , p = path.join(d, n + '.styl');
+      console.log("ASF", n, d, p);
+      if (fs.existsSync(p)) styl.import(d + '/' + n);
+    }
 
-      styl.set('paths',    [srcdir]);
-      styl.set('filename', 'style.css');
-
-      styl.import('global');
-
-      for (var i in directories) {
-        var d = directories[i],
-            p = path.join('modules', d, d + '.styl');
-        if (fs.existsSync(p)) styl.import(d + '/' + d);
-      };
-
-      styl.render(function (err, css) {
-        if (err) throw err;
-        data.set('stylesheet', css);
-        data.publish('watcher', 'stylesheet');
-      });
-
-    });
+    styl.render(function (err, css) {
+      if (err) throw err;
+      console.log(css);
+      this.data.set('style', css);
+      this.data.publish('watcher', 'style');
+    }.bind(this));
 
   },
 
