@@ -208,7 +208,8 @@ Watcher.prototype = {
 
       if (err) throw err;
 
-      var compiled = wisp.compile(source)
+      var compiled = wisp.compile(source);
+      console.log(compiled.code);
       data.set('session', compiled.code);
       data.publish('updated', 'session');
  

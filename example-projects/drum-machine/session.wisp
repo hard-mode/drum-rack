@@ -1,6 +1,34 @@
 (defmacro session [options & body]
-  `(do (init-session ~options)
+  `(do (init-session! ~options)
        (execute-body! ~@body)))
+
+
+(defn init-session! [options]
+  (let [console globals.console
+        require globals.require
+        env     globals.process.env
+        config  (set! globals.config  {})
+        modules (set! globals.modules {})]
+    (if options.info
+      (set! (aget globals.config "info") options.info))
+    (if options.use
+      (let [path  (require "path")
+            Redis (require "redis")
+            redis (Redis.createClient env.REDIS "127.0.0.1" {})]
+        (redis.publish "using"
+          (options.use.map (fn [module-name]
+            (let [module-path (path.join "../modules" module-name "server.js")
+                  module      (require module-path)]
+              (console.log (str "Using module '" module-name "' from:") module-path)
+              (set! (aget globals.modules module-name) module)
+              ))))))))
+
+
+(defn execute-body! [& body]
+  (let [context {"config" globals.config
+                 "data"   globals.data}]
+    (body.map (fn [ud]
+      (ud context)))))
 
 
 (session
@@ -9,11 +37,11 @@
     :info { :name   "Sampling Machine" 
             :author "Mlad Konstruktor <fallenblood@gmail.com>"} }
 
-  (http 4000
-    (rack "Sequencer"
-      (transport :tempo  140
+  (globals.modules.http 4000
+    (globals.modules.rack "Sequencer"
+      (globals.modules.transport :tempo  140
                  :meter [4 4] )))
-  (http 4001
-    (rack "Sampler"))
+  (globals.modules.http 4001
+    (globals.modules.rack "Sampler"))
 
 )

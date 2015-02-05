@@ -9,10 +9,11 @@ var SessionLauncher = function () {
   this.data    = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.bus     = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   this.path    = process.env.SESSION;
-  this.context = { process: process
-                 , console: console
-                 , require: require
-                 , data:    this.data };
+  this.context = { exports: {}
+                 , globals: { process: process
+                            , console: console
+                            , require: require
+                            , data:    this.data } };
   this.sandbox = vm.createContext(this.context);
 
   this.bus.subscribe('updated');
