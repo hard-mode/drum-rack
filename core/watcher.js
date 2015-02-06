@@ -189,6 +189,8 @@ Watcher.prototype = {
 
     var b = browserify();
 
+    b.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
+
     Object.keys(this.extra).map(function(module){
       var wispPath = path.join(this.extra[module].dir, 'client.wisp'),
           jsPath   = path.join(this.extra[module].dir, 'client.js');
