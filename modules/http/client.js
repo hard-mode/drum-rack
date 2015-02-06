@@ -8,12 +8,12 @@
 
   var N = 16;
 
-  H.init = function () {
-    var transport = new H.Transport();
-    var drumRack  = new H.DrumRack(N);
-    var timeline  = new H.Timeline(N);
-  }
+  //H.init = function () {
+    //var transport = new H.Transport();
+    //var drumRack  = new H.DrumRack(N);
+    //var timeline  = new H.Timeline(N);
+  //}
 
-  window.onload = H.init
+  //window.onload = H.init
 
 })(window.HARDMODE = window.HARDMODE || {});

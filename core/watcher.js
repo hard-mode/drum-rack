@@ -156,6 +156,8 @@ Watcher.prototype = {
 
   compileStyles: function () {
 
+    // compiles master stylesheet
+
     console.log("Compiling stylesheets.");
 
     var styl = stylus('');
@@ -180,46 +182,45 @@ Watcher.prototype = {
 
   compileScripts: function () {
 
+    // compiles all client-side scripts
+    // and bundles them together with browserify
+
     console.log("Compiling scripts.");
 
     var b = browserify();
 
     Object.keys(this.extra).map(function(module){
-      var modulePath = path.join(this.extra[module].dir, 'client.js');
-      console.log(modulePath);
-      if (fs.existsSync(modulePath)) b.add(modulePath);
+      var wispPath = path.join(this.extra[module].dir, 'client.wisp'),
+          jsPath   = path.join(this.extra[module].dir, 'client.js');
+      if (fs.existsSync(wispPath)) { b.add(wispPath); return } else
+      if (fs.existsSync(jsPath))   { b.add(jsPath);   return }
     }.bind(this));
 
-    b.bundle(function (err, bundled) {
+    b.transform('wispify').bundle(function (err, bundled) {
       if (err) throw err;
-      console.log("BUNDLED", bundled.toString());
       this.data.set('script', bundled);
       this.data.publish('updated', 'scripts');
-    }.bind(this))
+    }.bind(this));
 
   },
 
 
-  compileSession: function (src) {
+  compileSession: function () {
 
-    src = process.env.SESSION;
+    // compiles the (server-side) session script
 
-    if (!src) return;
+    console.log('Compiling session:', this.extra['session'].file);
 
-    console.log('Compiling session:', src);
-
-    var data = this.data;
-
-    fs.readFile(src, { encoding: 'utf8' }, function (err, source) {
-
-      if (err) throw err;
-
-      var compiled = wisp.compile(source);
-      console.log(compiled.code);
-      data.set('session', compiled.code);
-      data.publish('updated', 'session');
- 
-    });
+    fs.readFile(
+      this.extra['session'].file,
+      { encoding: 'utf8' },
+      function (err, source) {
+        if (err) throw err;
+        var compiled = wisp.compile(source);
+        this.data.set('session', compiled.code);
+        this.data.publish('updated', 'session');
+      }.bind(this)
+    );
 
   }
 
