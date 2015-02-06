@@ -1,7 +1,8 @@
-var fs    = require('fs')    // filesystem ops
-  , path  = require('path')  // path operation
-  , redis = require('redis') // fast datastore
-  , vm    = require('vm');   // eval isolation
+var fs    = require('fs')             // filesystem ops
+  , path  = require('path')           // path operation
+  , redis = require('redis')          // fast datastore
+  , vm    = require('vm')             // eval isolation
+  , wisp  = require('wisp/compiler'); // lispy language
 
 
 var SessionLauncher = function () {
@@ -27,11 +28,14 @@ var SessionLauncher = function () {
         if (!sessionCode) return;
 
         // evaluate session context code
-        vm.runInContext(
+        var compiled = wisp.compile(
           fs.readFileSync(
-            path.join(__dirname, 'context.js'),
-            { encoding: 'utf8' }),
-          this.sandbox,'<session-context>');
+            path.join(__dirname, 'core.wisp'),
+            { encoding: 'utf8' }));
+        vm.runInContext(
+          compiled.code,
+          this.sandbox,
+          '<session-context>');
 
         // evaluate your actual session code
         vm.runInContext(sessionCode, this.sandbox, '<session>');
