@@ -1,3 +1,8 @@
+(defmacro session [options & body]
+  `(do (init-session! ~options)
+       (execute-body! ~@body)))
+
+
 (session
 
   { :use  [ "http" "rack" "transport" ]
@@ -8,6 +13,7 @@
     (globals.modules.rack "Sequencer"
       (globals.modules.transport :tempo  140
                  :meter [4 4] )))
+
   (globals.modules.http 4001
     (globals.modules.rack "Sampler"))
 

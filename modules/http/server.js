@@ -56,7 +56,8 @@ Server.prototype = {
           reply(jade.renderFile(
             path.join(__dirname, 'index.jade'),
             { port:  this.port
-            , title: this.title }));
+            , title: this.title
+            , init:  this.init }));
 
         } }
 
@@ -79,6 +80,16 @@ Server.prototype = {
             if (err) throw err;
             reply(data).type('text/css');
           })
+
+        } }
+
+    , { path:    '/runtime'
+      , method:  'GET'
+      , handler: function (request, reply) {
+
+          reply.file(path.resolve(
+            path.join('node_modules', 'wisp', 'browser-embed.js')
+          ));
 
         } }
 

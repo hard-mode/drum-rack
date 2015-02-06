@@ -69,10 +69,11 @@ Watcher.prototype = {
     'using': function (message) {
       var modules = message.split(',');
       for (var i in modules) {
-        var module = modules[i];
+        var module = modules[i]
+          , dir    = path.resolve(path.join('modules', module));
         this.extra[module] =
-          { dir:  path.resolve(module)
-          , glob: path.join(path.resolve(module), '**', '*') }
+          { dir:  dir
+          , glob: path.join(dir, '**', '*') }
         this.gaze.add(this.extra[module].glob);
       }
     }

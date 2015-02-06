@@ -27,11 +27,13 @@ var SessionLauncher = function () {
         if (err) throw err;
         if (!sessionCode) return;
 
-        // evaluate session context code
+        // compile session context
         var compiled = wisp.compile(
           fs.readFileSync(
             path.join(__dirname, 'core.wisp'),
             { encoding: 'utf8' }));
+
+        // evaluate session context
         vm.runInContext(
           compiled.code,
           this.sandbox,

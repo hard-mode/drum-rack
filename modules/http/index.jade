@@ -7,4 +7,7 @@ html
     link(rel='stylesheet', href='/style')
 
   body
+    script(src='/runtime')
     script(src='/script')
+    each script in init
+      script(type='application/wisp')!= script
