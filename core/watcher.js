@@ -1,4 +1,5 @@
-var fs          = require('fs')             // filesystem ops
+var browserify  = require('browserify')     // bundle scripts
+  , fs          = require('fs')             // filesystem ops
   , gaze        = require('gaze')           // watching files
   , jade        = require('jade')           // html templates
   , path        = require('path')           // path operation
@@ -76,6 +77,7 @@ Watcher.prototype = {
           , glob: path.join(dir, '**', '*') }
         this.gaze.add(this.extra[module].glob);
       }
+      this.compileScripts();
     }
 
   },
@@ -180,17 +182,20 @@ Watcher.prototype = {
 
     console.log("Compiling scripts.");
 
-    var script = '';
+    var b = browserify();
 
-    for (var i in this.extra) {
-      var n = i.split('/')[1]
-        , d = this.extra[i].dir
-        , p = path.join(d, 'client.js');
-      if (fs.existsSync(p)) script += fs.readFileSync(p, {encoding: 'utf8'}) + '\n';
-    }
+    Object.keys(this.extra).map(function(module){
+      var modulePath = path.join(this.extra[module].dir, 'client.js');
+      console.log(modulePath);
+      if (fs.existsSync(modulePath)) b.add(modulePath);
+    }.bind(this));
 
-    this.data.set('script', script);
-    this.data.publish('updated', 'scripts');
+    b.bundle(function (err, bundled) {
+      if (err) throw err;
+      console.log("BUNDLED", bundled.toString());
+      this.data.set('script', bundled);
+      this.data.publish('updated', 'scripts');
+    }.bind(this))
 
   },
 

@@ -78,7 +78,7 @@ Server.prototype = {
 
           this.data.get('script', function (err, data) {
             if (err) throw err;
-            reply(data).type('text/css');
+            reply(data).type('application/javascript');
           })
 
         } }

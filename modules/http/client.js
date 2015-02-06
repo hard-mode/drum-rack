@@ -16,4 +16,4 @@
 
   window.onload = H.init
 
-})(HARDMODE);
+})(window.HARDMODE = window.HARDMODE || {});
