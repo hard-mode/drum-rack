@@ -154,11 +154,11 @@ Watcher.prototype.compileStyles = function () {
   styl.import('modules/global');
 
   for (var i in this.modules) {
-    var n = i.split('/')[1]
-      , d = this.modules[i].dir
-      , p = path.join(d, n + '.styl');
+    var d = this.modules[i].dir
+      , p = path.join(d, i + '.styl');
+    console.log(p);
     if (fs.existsSync(p)) {
-      styl.import(d + '/' + n);
+      styl.import(d + '/' + i);
     }
   }
 
