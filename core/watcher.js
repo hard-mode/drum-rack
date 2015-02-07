@@ -21,23 +21,22 @@ var endsWith = function (a, b) {
 
 var Watcher = module.exports = function () {
 
+  // redis connections
   var data = this.data = redis.createClient(process.env.REDIS, '127.0.0.1', {});
   var bus  = this.bus  = redis.createClient(process.env.REDIS, '127.0.0.1', {});
 
-  this.extra = {};
+  // modules used in session
+  this.modules = {};
 
+  // start watcher
   this.gaze = gaze(
-
     [ 'core/**/*' ],
-
     function (err, watcher) {
-
       if (err) throw err;
-
       watcher.on('all', this.onWatcherEvent.bind(this));
-
     }.bind(this));
 
+  // listen for messages over redis
   this.bus.subscribe('using');
   this.bus.subscribe('session-open');
   this.bus.on('message', function (channel, message) {
@@ -49,183 +48,172 @@ var Watcher = module.exports = function () {
 };
 
 
-Watcher.prototype = {
+Watcher.prototype.onMessage = {
 
+  'session-open': function (message) {
+    console.log("OPEN", message);
+    var s = this.modules['session'] =
+      { dir:  path.dirname(message)
+      , file: message };
+    s.glob = path.join(s.dir, '**', '*');
+    this.gaze.add(s.glob);
 
-  constructor: Watcher,
-
-
-  onMessage: {
-
-    'session-open': function (message) {
-      console.log("OPEN", message);
-      var s = this.extra['session'] =
-        { dir:  path.dirname(message)
-        , file: message };
-      s.glob = path.join(s.dir, '**', '*');
-      this.gaze.add(s.glob);
-      this.compileAll();
-    },
-
-    'using': function (message) {
-      var modules = message.split(',');
-      for (var i in modules) {
-        var module = modules[i]
-          , dir    = path.resolve(path.join('modules', module));
-        this.extra[module] =
-          { dir:  dir
-          , glob: path.join(dir, '**', '*') }
-        this.gaze.add(this.extra[module].glob);
-      }
-      this.compileScripts();
-    }
-
-  },
-
-
-  onWatcherEvent: function (event, filepath) {
-
-    this.data.publish('watcher', event + ':' + filepath);
-
-    // editing any file in the core directory
-    // triggers reload of watcher and session
-    if (path.dirname(filepath) === __dirname) {
-      this.data.publish('reload', 'all');
-      return;
-    } else {
-
-    if (endsWith(filepath, '.jade')) {
-      this.compileTemplates(path.dirname(filepath));
-    } else if (endsWith(filepath, '.js')) {
-      this.compileScripts();
-      this.data.publish('reload', 'all');
-    } else if (endsWith(filepath, '.styl')) {
-      this.compileStyles();
-    } else if (endsWith(filepath, '.wisp')) {
-      this.compileSession();
-      this.data.publish('reload', 'all');
-    }
-
-    }
-
-  },
-
-
-  compileAll: function () {
     this.compileSession();
-    this.compileTemplates();
+  },
+
+  'using': function (message) {
+    var modules = message.split(',');
+    for (var i in modules) {
+      var module = modules[i]
+        , dir    = path.resolve(path.join('modules', module));
+      this.modules[module] =
+        { dir:  dir
+        , glob: path.join(dir, '**', '*') }
+      this.gaze.add(this.modules[module].glob);
+    }
+
     this.compileScripts();
     this.compileStyles();
-  },
+    this.compileTemplates();
+  }
+
+};
 
 
-  compileTemplates: function (srcdir) {
+Watcher.prototype.onWatcherEvent = function (event, filepath) {
 
-    // all compiled jade templates are concatenated together by
-    // templatizer (https://github.com/HenrikJoreteg/templatzer).
-    // it can only write them to a file, though, so we use tmp as
-    // a momentary workaround to read them into redis.
+  this.data.publish('watcher', event + ':' + filepath);
 
-    console.log("Compiling templates.");
+  // editing any file in the core directory
+  // triggers reload of watcher and session
+  if (path.dirname(filepath) === __dirname) {
+    this.data.publish('reload', 'all');
+    return;
+  } else {
 
-    var data = this.data;
-
-    tmp.file(function (err, temppath) {
-
-      if (err) throw err;
-
-      templatizer(
-        srcdir,
-        temppath,
-        { namespace:        'session'
-        , dontRemoveMixins: true });
-
-      fs.readFile(
-        temppath,
-        { encoding: 'utf8' },
-        function (err, code) {
-          if (err) throw err;
-          data.set('templates', code);
-          data.publish('updated', 'templates');
-        });
-
-    });
-
-  },
-
-
-  compileStyles: function () {
-
-    // compiles master stylesheet
-
-    console.log("Compiling stylesheets.");
-
-    var styl = stylus('');
-    styl.set('filename', 'style.css');
-    styl.import('modules/global');
-
-    for (var i in this.extra) {
-      var n = i.split('/')[1]
-        , d = this.extra[i].dir
-        , p = path.join(d, n + '.styl');
-      if (fs.existsSync(p)) styl.import(d + '/' + n);
-    }
-
-    styl.render(function (err, css) {
-      if (err) throw err;
-      this.data.set('style', css);
-      this.data.publish('updated', 'style');
-    }.bind(this));
-
-  },
-
-
-  compileScripts: function () {
-
-    // compiles all client-side scripts
-    // and bundles them together with browserify
-
-    console.log("Compiling scripts.");
-
-    var b = browserify();
-
-    b.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
-
-    Object.keys(this.extra).map(function(module){
-      var wispPath = path.join(this.extra[module].dir, 'client.wisp'),
-          jsPath   = path.join(this.extra[module].dir, 'client.js');
-      if (fs.existsSync(wispPath)) { b.add(wispPath); return } else
-      if (fs.existsSync(jsPath))   { b.add(jsPath);   return }
-    }.bind(this));
-
-    b.transform('wispify').bundle(function (err, bundled) {
-      if (err) throw err;
-      this.data.set('script', bundled);
-      this.data.publish('updated', 'scripts');
-    }.bind(this));
-
-  },
-
-
-  compileSession: function () {
-
-    // compiles the (server-side) session script
-
-    console.log('Compiling session:', this.extra['session'].file);
-
-    fs.readFile(
-      this.extra['session'].file,
-      { encoding: 'utf8' },
-      function (err, source) {
-        if (err) throw err;
-        var compiled = wisp.compile(source);
-        this.data.set('session', compiled.code);
-        this.data.publish('updated', 'session');
-      }.bind(this)
-    );
+  if (endsWith(filepath, '.jade')) {
+    this.compileTemplates(path.dirname(filepath));
+  } else if (endsWith(filepath, '.js')) {
+    this.compileScripts();
+    this.data.publish('reload', 'all');
+  } else if (endsWith(filepath, '.styl')) {
+    this.compileStyles();
+  } else if (endsWith(filepath, '.wisp')) {
+    this.compileSession();
+    this.data.publish('reload', 'all');
+  }
 
   }
 
+};
+
+
+Watcher.prototype.compileTemplates = function (srcdir) {
+
+  // all compiled jade templates are concatenated together by
+  // templatizer (https://github.com/HenrikJoreteg/templatzer).
+  // it can only write them to a file, though, so we use tmp as
+  // a momentary workaround to read them into redis.
+
+  console.log("Compiling templates.");
+
+  var data = this.data;
+
+  tmp.file(function (err, temppath) {
+
+    if (err) throw err;
+
+    templatizer(
+      srcdir,
+      temppath,
+      { namespace:        'session'
+      , dontRemoveMixins: true });
+
+    fs.readFile(
+      temppath,
+      { encoding: 'utf8' },
+      function (err, code) {
+        if (err) throw err;
+        data.set('templates', code);
+        data.publish('updated', 'templates');
+      });
+
+  });
+
+};
+
+
+Watcher.prototype.compileStyles = function () {
+
+  // compiles master stylesheet
+
+  console.log("Compiling stylesheets.");
+
+  var styl = stylus('');
+  styl.set('filename', 'style.css');
+  styl.import('modules/global');
+
+  for (var i in this.modules) {
+    var n = i.split('/')[1]
+      , d = this.modules[i].dir
+      , p = path.join(d, n + '.styl');
+    if (fs.existsSync(p)) {
+      styl.import(d + '/' + n);
+    }
+  }
+
+  styl.render(function (err, css) {
+    if (err) throw err;
+    this.data.set('style', css);
+    this.data.publish('updated', 'style');
+  }.bind(this));
+
+};
+
+
+Watcher.prototype.compileScripts = function () {
+
+  // compiles all client-side scripts
+  // and bundles them together with browserify
+
+  console.log("Compiling scripts.");
+
+  var b = browserify();
+
+  b.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
+
+  Object.keys(this.modules).map(function(module){
+    var wispPath = path.join(this.modules[module].dir, 'client.wisp'),
+        jsPath   = path.join(this.modules[module].dir, 'client.js');
+    if (fs.existsSync(wispPath)) { b.add(wispPath); return } else
+    if (fs.existsSync(jsPath))   { b.add(jsPath);   return }
+  }.bind(this));
+
+  b.transform('wispify').bundle(function (err, bundled) {
+    if (err) throw err;
+    this.data.set('script', bundled);
+    this.data.publish('updated', 'scripts');
+  }.bind(this));
+
+};
+
+
+Watcher.prototype.compileSession = function () {
+
+  // compiles the (server-side) session script
+
+  console.log('Compiling session:', this.modules['session'].file);
+
+  fs.readFile(
+    this.modules['session'].file,
+    { encoding: 'utf8' },
+    function (err, source) {
+      if (err) throw err;
+      var compiled = wisp.compile(source);
+      this.data.set('session', compiled.code);
+      this.data.publish('updated', 'session');
+    }.bind(this)
+  );
 
 };
 
