@@ -1,17 +1,26 @@
 var browserify  = require('browserify')     // bundle scripts
   , fs          = require('fs')             // filesystem ops
   , gaze        = require('gaze')           // watching files
+  , glob        = require('glob')           // glob for files
   , jade        = require('jade')           // html templates
   , path        = require('path')           // path operation
   , redis       = require('redis')          // fast datastore
   , stylus      = require('stylus')         // css preprocess
   , templatizer = require('templatizer')    // glue templates
   , tmp         = require('tmp')            // get temp files
+  , util        = require('util')           // node utilities
   , wisp        = require('wisp/compiler'); // lispy language
 
 
 // https://github.com/raszi/node-tmp#graceful-cleanup
 tmp.setGracefulCleanup();
+
+
+function DynamicMixinsCompiler () {
+    jade.Compiler.apply(this, arguments);
+    this.dynamicMixins = true;
+}
+util.inherits(DynamicMixinsCompiler, jade.Compiler);
 
 
 var endsWith = function (a, b) {
@@ -126,7 +135,7 @@ Watcher.prototype.compileTemplates = function (srcdir) {
     templatizer(
       srcdir,
       temppath,
-      { namespace:        'session'
+      { namespace:        'HARDMODE'
       , dontRemoveMixins: true });
 
     fs.readFile(
@@ -178,18 +187,29 @@ Watcher.prototype.compileScripts = function () {
 
   console.log("Compiling scripts.");
 
-  var b = browserify();
+  var br = browserify();
 
-  b.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
+  br.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
 
   Object.keys(this.modules).map(function(module){
-    var wispPath = path.join(this.modules[module].dir, 'client.wisp'),
-        jsPath   = path.join(this.modules[module].dir, 'client.js');
-    if (fs.existsSync(wispPath)) { b.add(wispPath); return } else
-    if (fs.existsSync(jsPath))   { b.add(jsPath);   return }
+
+    var moduleDir = this.modules[module].dir;
+
+    // browserify jade templates
+    glob.sync(path.join(moduleDir, '**', '*.jade'))
+        .map(function (template) { br.add(template); });
+
+    // todo replace with package.json
+    var wispPath = path.join(moduleDir, 'client.wisp'),
+        jsPath   = path.join(moduleDir, 'client.js');
+    if (fs.existsSync(wispPath)) { br.add(wispPath); } else
+    if (fs.existsSync(jsPath))   { br.add(jsPath);   }
+
   }.bind(this));
 
-  b.transform('wispify').bundle(function (err, bundled) {
+  br.transform('wispify')
+    .transform(require('browserify-jade').jade({compiler: DynamicMixinsCompiler}))
+    .bundle(function (err, bundled) {
     if (err) throw err;
     this.data.set('script', bundled);
     this.data.publish('updated', 'scripts');

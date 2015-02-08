@@ -83,6 +83,17 @@ Server.prototype = {
 
         } }
 
+    , { path:    '/templates'
+      , method:  'GET'
+      , handler: function (request, reply) {
+
+          this.data.get('templates', function (err, data) {
+            if (err) throw err;
+            reply(data).type('application/javascript');
+          })
+
+        } }
+
     , { path:    '/runtime'
       , method:  'GET'
       , handler: function (request, reply) {

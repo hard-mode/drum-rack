@@ -9,5 +9,7 @@ html
   body
     //-script(src='/runtime')
     script(src='/script')
+    script(src='/templates')
     each script in init
-      pre.script(type='application/wisp')!= script
+      pre= script
+      script(type='application/wisp')!= script
