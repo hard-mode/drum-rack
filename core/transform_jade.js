@@ -19,6 +19,38 @@ var MODULE_EXPORTS         =
     , id:   { type: "Identifier", name: "jade_mixins" }
     , init: MODULE_EXPORTS_STMT }
 
+  , BUF_PUSH = function(node){
+
+      function bufPush (node) {
+        if (node.type                          === 'ExpressionStatement' &&
+            node.expression.type               === 'CallExpression'      &&
+            node.expression.callee.type        === 'MemberExpression'    &&
+            node.expression.callee.object.type === 'Identifier'          &&
+            node.expression.callee.object.name === 'jade_mixins'        ) {
+
+          node.expression =  {
+            "type": "CallExpression",
+            "callee": {
+                "type": "MemberExpression",
+                "computed": false,
+                "object": { "type": "Identifier",
+                            "name": "buf" },
+                "property": { "type": "Identifier",
+                              "name": "push" } },
+            "arguments": [node.expression]
+          };
+
+          return node;
+        }
+      }
+
+      bufPush(node);
+
+      if (node.body) node.body.body.map(bufPush);
+
+      return node;
+
+    }
 
 module.exports = function transformJade (file) {
 
@@ -76,11 +108,13 @@ module.exports = function transformJade (file) {
 
       mixins.map(function(mixin){
 
+        var mixinBody = mixin.expression.right.body.body;
+
         // export each mixin
         mixin.expression.left.object = MODULE_EXPORTS;
 
         // declare local buf
-        mixin.expression.right.body.body.unshift(
+        mixinBody.unshift(
           { type: "VariableDeclaration"
           , kind: "var"
           , declarations:
@@ -90,32 +124,10 @@ module.exports = function transformJade (file) {
             , JADE_MIXINS_DECLARATOR ] } );
 
         // push mixin calls to buf
-        mixin.expression.right.body.body.map(function(node){
+        mixinBody.map(BUF_PUSH);
 
-          if (node.type                          === 'ExpressionStatement' &&
-              node.expression.type               === 'CallExpression'      &&
-              node.expression.callee.type        === 'MemberExpression'    &&
-              node.expression.callee.object.type === 'Identifier'          &&
-              node.expression.callee.object.name === 'jade_mixins'        ) {
-
-            node.expression =  {
-              "type": "CallExpression",
-              "callee": {
-                  "type": "MemberExpression",
-                  "computed": false,
-                  "object": { "type": "Identifier",
-                              "name": "buf" },
-                  "property": { "type": "Identifier",
-                                "name": "push" } },
-              "arguments": [node.expression]
-            };
-
-          }
-
-          return node;
-        });
-
-        mixin.expression.right.body.body.push(
+        // return buf
+        mixinBody.push(
           { type: "ReturnStatement"
           , argument: { type: "CallExpression"
                       , callee: { type:     "MemberExpression"
