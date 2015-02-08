@@ -87,7 +87,7 @@ module.exports = function transformJade (file) {
       })
 
       data = escodegen.generate(ast);
-      console.log(data);
+      //console.log(data);
     }
 
     this.queue(data);
