@@ -1,5 +1,7 @@
 module.exports = function () {
+
   var args = arguments;
+
   return function (context) {
 
     context.rack = new Rack(context, {name: args[0]});
@@ -18,6 +20,7 @@ module.exports = function () {
     context.http.init.push(init);
 
   }
+
 };
 
 var Rack = module.exports.Rack = function (context, options) {};

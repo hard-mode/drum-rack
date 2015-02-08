@@ -1,8 +1,13 @@
 (function(H) {
 
+var Reflux = require('../../bower_components/reflux/dist/reflux.js');
+
 H.Timeline = function (options) {
 
-  var el = this.el = HTMLToDOMNode(H.TEMPLATES.timeline.timeline.Timeline(options)).firstChild;
+  options = { tracks: 16 };
+
+  var el = this.el = HTMLToDOMNode(
+    require('./timeline.jade').Timeline(options)).firstChild;
 
   var actions = {
     cursor: Reflux.createActions([
@@ -85,6 +90,8 @@ H.Timeline = function (options) {
     }
 
   });
+
+  return { element: el }
 
 };
 

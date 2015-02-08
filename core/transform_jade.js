@@ -4,6 +4,16 @@ var esprima   = require('esprima')   // transform jade
   , through   = require('through')   // stream utility
 
 
+var MODULE_EXPORTS =
+    { type:     "MemberExpression"
+    , computed: false
+    , object:   { type: "Identifier", name: "module"  }
+    , property: { type: "Identifier", name: "exports" } }
+  , MODULE_EXPORTS_STMT =
+    { type: "ExpressionStatement"
+    , expression: MODULE_EXPORTS };
+
+
 module.exports = function transformJade (file) {
 
   var data = '';
@@ -37,14 +47,7 @@ module.exports = function transformJade (file) {
                 var node3 = node2.declarations[k];
                 if (node3.type === 'VariableDeclarator' &&
                     node3.id.name === 'jade_mixins') {
-
-                  node3.init =
-                    { type: "ExpressionStatement"
-                    , expression:
-                      { type:     "MemberExpression"
-                      , computed: false
-                      , object:   { type: "Identifier", name: "module" }
-                      , property: { type: "Identifier", name: "exports" } } };
+                  node3.init = MODULE_EXPORTS_STMT;
                 }
               }
             }
@@ -64,15 +67,17 @@ module.exports = function transformJade (file) {
       };
 
       mixins.map(function(mixin){
-        mixin.expression.left.object =
-          { type:     "MemberExpression"
-          , computed: false
-          , object:   { type: "Identifier", name: "module"}
-          , property: { type: "Identifier", name: "exports" } };
+        mixin.expression.left.object = MODULE_EXPORTS;
         mixin.expression.right.body.body.unshift(
-          { type: "VariableDeclarator"
-          , id:   { type: "Identifier", name: "buf" }
-          , init: { type: "ArrayExpression", elements: []} });
+          { type: "VariableDeclaration"
+          , kind: "var"
+          , declarations:
+            [ { type: "VariableDeclarator"
+              , id:   { type: "Identifier", name: "buf" }
+              , init: { type: "ArrayExpression", elements: [] } }
+            , { type: "VariableDeclarator"
+              , id:   { type: "Identifier", name: "jade_mixins" }
+              , init: MODULE_EXPORTS_STMT}]});
         mixin.expression.right.body.body.push(
           { type: "ReturnStatement"
           , argument: { type: "CallExpression"

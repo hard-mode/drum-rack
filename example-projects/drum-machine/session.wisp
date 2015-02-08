@@ -5,14 +5,16 @@
 
 (session
 
-  { :use  [ "http" "rack" "transport" ]
+  { :use  [ "http" "rack" "transport" "timeline" ]
     :info { :name   "Sampling Machine" 
             :author "Mlad Konstruktor <fallenblood@gmail.com>"} }
 
   (globals.modules.http 4000
     (globals.modules.rack "Sequencer"
-      (globals.modules.transport :tempo  140
-                 :meter [4 4] )))
+      (globals.modules.transport
+        :tempo  140
+        :meter [4 4] )
+      (globals.modules.timeline)))
 
   (globals.modules.http 4001
     (globals.modules.rack "Sampler"))

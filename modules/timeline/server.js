@@ -1,18 +1,19 @@
-module.exports = function (Session) {
+module.exports = function () {
 
-  var Timeline = function (session, options) {
-    this.session = session;
-    this.client  = 'Timeline';
-    this.options = options;
-  }
+  var args = arguments;
 
-  Session.prototype.timeline = function (options) {
+  return function (context) {
 
-    var t = new Timeline(this, options);
-    this._add(t);
+    context.timeline = new Timeline();
 
-    return this;
+    return "(HARDMODE.Timeline)";
 
   }
 
+}
+
+var Timeline = module.exports.Timeline = function (session, options) {
+  this.session = session;
+  this.client  = 'Timeline';
+  this.options = options;
 }
