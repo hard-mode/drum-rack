@@ -8,14 +8,8 @@ var browserify  = require('browserify')     // bundle scripts
   , path        = require('path')           // path operation
   , redis       = require('redis')          // fast datastore
   , stylus      = require('stylus')         // css preprocess
-  , templatizer = require('templatizer')    // glue templates
-  , tmp         = require('tmp')            // get temp files
   , util        = require('util')           // node utilities
   , wisp        = require('wisp/compiler'); // lispy language
-
-
-// https://github.com/raszi/node-tmp#graceful-cleanup
-tmp.setGracefulCleanup();
 
 
 function DynamicMixinsCompiler () {
@@ -85,7 +79,6 @@ Watcher.prototype.onMessage = {
 
     this.compileScripts();
     this.compileStyles();
-    this.compileTemplates();
   }
 
 };
@@ -102,9 +95,7 @@ Watcher.prototype.onWatcherEvent = function (event, filepath) {
     return;
   } else {
 
-  if (endsWith(filepath, '.jade')) {
-    this.compileTemplates(path.dirname(filepath));
-  } else if (endsWith(filepath, '.js')) {
+  if (endsWith(filepath, '.js') || endsWith(filepath, '.jade')) {
     this.compileScripts();
     this.data.publish('reload', 'all');
   } else if (endsWith(filepath, '.styl')) {
@@ -115,41 +106,6 @@ Watcher.prototype.onWatcherEvent = function (event, filepath) {
   }
 
   }
-
-};
-
-
-Watcher.prototype.compileTemplates = function (srcdir) {
-
-  // all compiled jade templates are concatenated together by
-  // templatizer (https://github.com/HenrikJoreteg/templatzer).
-  // it can only write them to a file, though, so we use tmp as
-  // a momentary workaround to read them into redis.
-
-  console.log("Compiling templates.");
-
-  var data = this.data;
-
-  tmp.file(function (err, temppath) {
-
-    if (err) throw err;
-
-    templatizer(
-      srcdir,
-      temppath,
-      { namespace:        'HARDMODE'
-      , dontRemoveMixins: true });
-
-    fs.readFile(
-      temppath,
-      { encoding: 'utf8' },
-      function (err, code) {
-        if (err) throw err;
-        data.set('templates', code);
-        data.publish('updated', 'templates');
-      });
-
-  });
 
 };
 
