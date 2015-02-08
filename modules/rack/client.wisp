@@ -1,6 +1,4 @@
-(let [H window.HARDMODE]
-
-(set! (aget H "Rack")
+(set! (aget window.HARDMODE "Rack")
   (fn [options & body]
     (let [template  H.TEMPLATES.rack.rack.Rack
           rendered  (template options)
@@ -10,5 +8,3 @@
                       c)))]
     { :element  element
       :children children })))
-
-)
