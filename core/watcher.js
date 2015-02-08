@@ -24,7 +24,7 @@ util.inherits(DynamicMixinsCompiler, jade.Compiler);
 
 
 var endsWith = function (a, b) {
-  return a.indexOf(b) === (a.length - b.length);
+  return a.lastIndexOf(b) === (a.length - b.length);
 }
 
 
@@ -189,31 +189,35 @@ Watcher.prototype.compileScripts = function () {
 
   var br = browserify();
 
+  // add wisp runtime
   br.add(path.resolve(path.join('node_modules', 'wisp', 'engine', 'browser.js')));
 
   Object.keys(this.modules).map(function(module){
 
     var moduleDir = this.modules[module].dir;
 
-    // browserify jade templates
+    // add jade templates
     glob.sync(path.join(moduleDir, '**', '*.jade'))
         .map(function (template) { br.add(template); });
 
-    // todo replace with package.json
-    var wispPath = path.join(moduleDir, 'client.wisp'),
-        jsPath   = path.join(moduleDir, 'client.js');
+    // add main client script
+    // TODO replace with package.json
+    var wispPath = path.join(moduleDir, 'client.wisp')
+      , jsPath   = path.join(moduleDir, 'client.js');
     if (fs.existsSync(wispPath)) { br.add(wispPath); } else
     if (fs.existsSync(jsPath))   { br.add(jsPath);   }
 
   }.bind(this));
 
+  // transform, bundle, and store in redis
   br.transform('wispify')
-    .transform(require('browserify-jade').jade({compiler: DynamicMixinsCompiler}))
+    .transform(require('jadeify'), { compiler: DynamicMixinsCompiler })
+    .transform({ global: true }, 'uglifyify' )
     .bundle(function (err, bundled) {
-    if (err) throw err;
-    this.data.set('script', bundled);
-    this.data.publish('updated', 'scripts');
-  }.bind(this));
+      if (err) throw err;
+      this.data.set('script', bundled);
+      this.data.publish('updated', 'scripts');
+    }.bind(this));
 
 };
 
