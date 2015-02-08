@@ -4,23 +4,31 @@ var esprima   = require('esprima')   // transform jade
   , through   = require('through')   // stream utility
 
 
-var MODULE_EXPORTS =
+var MODULE_EXPORTS         =
     { type:     "MemberExpression"
     , computed: false
     , object:   { type: "Identifier", name: "module"  }
     , property: { type: "Identifier", name: "exports" } }
-  , MODULE_EXPORTS_STMT =
+
+  , MODULE_EXPORTS_STMT    =
     { type: "ExpressionStatement"
-    , expression: MODULE_EXPORTS };
+    , expression: MODULE_EXPORTS }
+
+  , JADE_MIXINS_DECLARATOR =
+    { type: "VariableDeclarator"
+    , id:   { type: "Identifier", name: "jade_mixins" }
+    , init: MODULE_EXPORTS_STMT }
 
 
 module.exports = function transformJade (file) {
 
   var data = '';
+
   return through(write, end);
 
   function write (buf) { data += buf }
-  function end () {
+
+  function end   () {
 
     if (path.extname(file) === '.jade') {
 
@@ -47,7 +55,7 @@ module.exports = function transformJade (file) {
                 var node3 = node2.declarations[k];
                 if (node3.type === 'VariableDeclarator' &&
                     node3.id.name === 'jade_mixins') {
-                  node3.init = MODULE_EXPORTS_STMT;
+                  node3 = JADE_MIXINS_DECLARATOR;
                 }
               }
             }
@@ -67,7 +75,11 @@ module.exports = function transformJade (file) {
       };
 
       mixins.map(function(mixin){
+
+        // export each mixin
         mixin.expression.left.object = MODULE_EXPORTS;
+
+        // declare local buf
         mixin.expression.right.body.body.unshift(
           { type: "VariableDeclaration"
           , kind: "var"
@@ -75,9 +87,34 @@ module.exports = function transformJade (file) {
             [ { type: "VariableDeclarator"
               , id:   { type: "Identifier", name: "buf" }
               , init: { type: "ArrayExpression", elements: [] } }
-            , { type: "VariableDeclarator"
-              , id:   { type: "Identifier", name: "jade_mixins" }
-              , init: MODULE_EXPORTS_STMT}]});
+            , JADE_MIXINS_DECLARATOR ] } );
+
+        // push mixin calls to buf
+        mixin.expression.right.body.body.map(function(node){
+
+          if (node.type                          === 'ExpressionStatement' &&
+              node.expression.type               === 'CallExpression'      &&
+              node.expression.callee.type        === 'MemberExpression'    &&
+              node.expression.callee.object.type === 'Identifier'          &&
+              node.expression.callee.object.name === 'jade_mixins'        ) {
+
+            node.expression =  {
+              "type": "CallExpression",
+              "callee": {
+                  "type": "MemberExpression",
+                  "computed": false,
+                  "object": { "type": "Identifier",
+                              "name": "buf" },
+                  "property": { "type": "Identifier",
+                                "name": "push" } },
+              "arguments": [node.expression]
+            };
+
+          }
+
+          return node;
+        });
+
         mixin.expression.right.body.body.push(
           { type: "ReturnStatement"
           , argument: { type: "CallExpression"
@@ -88,6 +125,7 @@ module.exports = function transformJade (file) {
                       , arguments:
                         [ { type: "Literal", value: "", raw: "\"\""   }]}});
         ast.body.push(mixin);
+
       })
 
       data = escodegen.generate(ast);
