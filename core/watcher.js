@@ -1,4 +1,6 @@
 var browserify  = require('browserify')     // bundle scripts
+  , esprima     = require('esprima')        // transform jade
+  , escodegen   = require('escodegen')      // jade transform
   , fs          = require('fs')             // filesystem ops
   , gaze        = require('gaze')           // watching files
   , glob        = require('glob')           // glob for files
@@ -165,7 +167,6 @@ Watcher.prototype.compileStyles = function () {
   for (var i in this.modules) {
     var d = this.modules[i].dir
       , p = path.join(d, i + '.styl');
-    console.log(p);
     if (fs.existsSync(p)) {
       styl.import(d + '/' + i);
     }
@@ -212,7 +213,8 @@ Watcher.prototype.compileScripts = function () {
   // transform, bundle, and store in redis
   br.transform('wispify')
     .transform(require('jadeify'), { compiler: DynamicMixinsCompiler })
-    .transform({ global: true }, 'uglifyify' )
+    .transform(require('./transform_jade.js'))
+    //.transform({ global: true }, 'uglifyify' )
     .bundle(function (err, bundled) {
       if (err) throw err;
       this.data.set('script', bundled);

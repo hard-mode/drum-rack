@@ -1,6 +1,5 @@
 (set! (aget window.HARDMODE "Rack")
   (fn [options & body]
-    (console.log (require "./rack.jade"))
     (let [template  (require "./rack.jade")
           rendered  (template options)
           element   (aget (HTMLToDOMNode rendered) "firstChild")
