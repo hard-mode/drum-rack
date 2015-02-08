@@ -13,7 +13,6 @@ module.exports = function transformJade (file) {
   function end () {
 
     if (path.extname(file) === '.jade') {
-      console.log('\n');
 
       var ast    = esprima.parse(data)
         , mixins = [];
@@ -87,7 +86,10 @@ module.exports = function transformJade (file) {
       })
 
       data = escodegen.generate(ast);
+
+      //console.log('\n');
       //console.log(data);
+
     }
 
     this.queue(data);

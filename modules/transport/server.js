@@ -9,6 +9,7 @@ module.exports = function () {
 
   return function (context) {
     context.transport = new Transport(context, options);
+    return "(HARDMODE.Transport)"
   }
 }
 
